@@ -172,7 +172,7 @@
 
         
         <div class="single-speed-div-class red-class">
-          <span>50</span>
+          <span>5.0</span>
         </div>
         
         <div class="seperator3">
@@ -180,13 +180,13 @@
         </div>
 
         <div class="single-speed-div-class red-class">
-          <span>40</span>
+          <span>4.0</span>
         </div>
         <div class="seperator3">
           <div class="seperator"></div>
         </div>
         <div class="single-speed-div-class orange-red-gradient-class">
-          <span>30</span>
+          <span>3.0</span>
         </div>
 
         <div class="seperator2">
@@ -194,15 +194,15 @@
         </div>
 
         <div class="single-speed-div-class orange-gradient-class">
-          <span>20</span>
+          <span>2.0</span>
         </div>
         <div class="seperator"></div>
         <div class="single-speed-div-class">
-          <span>10</span>
+          <span>1.0</span>
         </div>
         <div class="seperator"></div>
         <div class="single-speed-div-class green-class">
-          <span>00</span>
+          <span>0.0</span>
         </div>
         <div class="seperator"></div>
         
@@ -465,7 +465,7 @@
       for (let i = 0; i < trace.length - 1; i++) {
         let t = i / (trace.length - 1);    // 0..1
         let alpha = t/1.5;                    // older => more transparent
-        let lineWidth = 0.4 + 6* t;        // older => thinner
+        let lineWidth = 0.1 + 2* t;        // older => thinner
 
         ctx.beginPath();
         ctx.moveTo(trace[i].x, trace[i].y);
@@ -587,7 +587,7 @@
       particle.thrust.timer = 0;
       trace.length = 0; 
 
-      
+      futurePath = calculateFuturePath();
 
 
     }
@@ -709,6 +709,7 @@ function drawFuturePath() {
 
     // Start the gravity simulation
     update();
+    futurePath = calculateFuturePath();
   </script>
 </body>
 </html>
