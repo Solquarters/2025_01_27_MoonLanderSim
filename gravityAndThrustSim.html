@@ -127,11 +127,45 @@
 .green-class{
   background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,255,0,1) 100%, rgba(0,255,0,1) 100%);
 }
+#collisionMainDivId {
+  position: absolute;
+  bottom: 2%;
+  left: calc(50% - 150px);
+  border: 2px solid rgba(255, 255, 255, 0.829);
+  border-radius: 4px;
+  height: 48px;
+  width: 300px;
+  overflow: hidden;
+  background: radial-gradient(circle, rgba(255,162,0,1) 25%, rgba(255,0,0,1) 100%);
+  color: white;
+  font-size: 24px;
+  font-weight: 1000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  
+  /* Add animation */
+  animation: warningBlink 1s step-end infinite;
+}
 
+@keyframes warningBlink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
   </style>
 </head>
 <body>
   <div id="mainHUDId" onclick="">
+    <div class="" id="collisionMainDivId">
+      ON COLLISION COURSE
+    </div>
     <div id="velocityMainDivId">
       <div id="velIndicatorId"></div>
       <div class="" id="velocityStepsDivId">
@@ -601,9 +635,11 @@ function calculateFuturePath() {
     if (dist < centerMass.radius + particle.radius) {
       collisionPoint = { x: particle.x, y: particle.y };
       collisionSpeed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy); // Calculate speed
+
+      document.getElementById('collisionMainDivId').style.display="flex";
       break; // Stop simulating further
     }
-
+    document.getElementById('collisionMainDivId').style.display="none";
     // Push to path array
     tempPath.push({ x: particle.x, y: particle.y });
   }
@@ -652,8 +688,10 @@ function drawFuturePath() {
       ctx.fillStyle = 'red';
       ctx.font = '20px Arial';
       ctx.fillText('X', collisionPoint.x - 10, collisionPoint.y + 10);
+      document.getElementById('collisionMainDivId').style.display="flex";
     } else {
       // Draw green circle for low-speed collision
+     
       ctx.fillStyle = 'green';
       ctx.beginPath();
       ctx.arc(collisionPoint.x, collisionPoint.y, 4, 0, Math.PI * 2);
