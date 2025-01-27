@@ -391,13 +391,16 @@
       trace.length = 0; 
     }
 
-    /****************************************************
-     * PART 4: FUTURE PATH PROJECTION
-     ****************************************************/
-    let futurePath = [];    // array of {x, y} points for future path
+  /****************************************************
+ * PART 4: FUTURE PATH PROJECTION
+ ****************************************************/
+let futurePath = []; // Array of {x, y} points for future path
+let collisionPoint = null; // Store the collision point
+let collisionSpeed = 0; // Store the speed at collision
+const COLLISION_SPEED_THRESHOLD = 1.5; // Tweak this value as needed
 
-    function calculateFuturePath() {
-  // 2) Backup current real state
+function calculateFuturePath() {
+  // Backup current real state
   const backup = {
     x: particle.x,
     y: particle.y,
@@ -406,60 +409,91 @@
   };
 
   const tempPath = [];
-  const steps = 800;           // number of steps to predict
-  const dt = 1;                // your time increment, e.g. "1 frame’s worth"
+  const steps = 800; // Number of steps to predict
+  const dt = 1; // Time increment, e.g., "1 frame’s worth"
 
-  // 3) Simulate forward in small steps
+  collisionPoint = null; // Reset collision point
+  collisionSpeed = 0; // Reset collision speed
+
+  // Simulate forward in small steps
   for (let i = 0; i < steps; i++) {
-    // apply gravity (same as in your update())
+    // Apply gravity (same as in your update())
     const dx = centerMass.x - particle.x;
     const dy = centerMass.y - particle.y;
-    const dist = Math.sqrt(dx*dx + dy*dy);
+    const dist = Math.sqrt(dx * dx + dy * dy);
     const force = G * (centerMass.mass * particle.mass) / (dist * dist);
     const angle = Math.atan2(dy, dx);
     particle.vx += force * Math.cos(angle) * dt;
     particle.vy += force * Math.sin(angle) * dt;
 
-    // no user thrust in the future path (since we assume no more key presses)
-    
-    // update position
+    // Update position
     particle.x += particle.vx * dt;
     particle.y += particle.vy * dt;
 
-    // push to path array
-    tempPath.push({x: particle.x, y: particle.y});
+    // Check for collision
+    if (dist < centerMass.radius + particle.radius) {
+      collisionPoint = { x: particle.x, y: particle.y };
+      collisionSpeed = Math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy); // Calculate speed
+      break; // Stop simulating further
+    }
+
+    // Push to path array
+    tempPath.push({ x: particle.x, y: particle.y });
   }
 
-  // 4) Restore the real simulation state
+  // Restore the real simulation state
   particle.x = backup.x;
   particle.y = backup.y;
   particle.vx = backup.vx;
   particle.vy = backup.vy;
 
-  // return predicted future path
+  // Return predicted future path
   return tempPath;
 }
 
-// 5) In your draw loop, you can render the future path
+// Draw the future path and collision indicator
 function drawFuturePath() {
   if (futurePath.length === 0) return;
-  
+
+  // Draw the future path
   ctx.beginPath();
-  // Move to the first future point
   ctx.moveTo(futurePath[0].x, futurePath[0].y);
   for (let i = 1; i < futurePath.length; i++) {
     ctx.lineTo(futurePath[i].x, futurePath[i].y);
   }
-  // For example, draw a dotted line
+
+  // Set path color based on collision speed
+  if (collisionPoint) {
+    if (collisionSpeed > COLLISION_SPEED_THRESHOLD) {
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.6)'; // Red for high-speed collision
+    } else {
+      ctx.strokeStyle = 'rgba(0, 255, 0, 0.6)'; // Green for low-speed collision
+    }
+  } else {
+    ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)'; // Default yellow for no collision
+  }
+
   ctx.setLineDash([5, 5]);
-  ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)';
   ctx.lineWidth = 1.5;
   ctx.stroke();
-  ctx.setLineDash([]); // reset dash
+  ctx.setLineDash([]); // Reset dash
+
+  // Draw collision indicator
+  if (collisionPoint) {
+    if (collisionSpeed > COLLISION_SPEED_THRESHOLD) {
+      // Draw red "X" for high-speed collision
+      ctx.fillStyle = 'red';
+      ctx.font = '20px Arial';
+      ctx.fillText('X', collisionPoint.x - 10, collisionPoint.y + 10);
+    } else {
+      // Draw green circle for low-speed collision
+      ctx.fillStyle = 'green';
+      ctx.beginPath();
+      ctx.arc(collisionPoint.x, collisionPoint.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
 }
-
-
-
 
 
 
