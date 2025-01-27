@@ -2,8 +2,18 @@
 <html>
 <head>
   <style>
+
+/* anta-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: 'Anta';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../fonts/anta-v1-latin-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
     /* Remove any background-image to avoid extra overhead */
     body {
+      font-family: 'Anta';
       margin: 0; 
       padding: 0;
       background: #000; 
@@ -31,9 +41,79 @@
     #starryBg      { z-index: 0; }
 
     #velocityInfoId{color: white;}
+    
+#mainHUDId{
+  position: absolute;
+  z-index: 10;
+  width:100%; 
+  height: 100%;
+/* background-color: rgba(0, 255, 255, 0.308); */
+
+}
+
+#velocityMainDivId{
+  position: absolute;
+  top: 25%;
+  left: 5%;
+  border: 2px solid rgba(255, 255, 255, 0.829);
+  border-radius: 4px;
+  height: 50%;
+  width: 48px;
+  overflow: hidden;
+}
+#velocityStepsDivId{
+  height: 800px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  color: white;
+  position: relative;
+  transition: all 180ms ease-in-out;
+  bottom: 516px;
+ 
+}
+.seperator{
+  width: 50%;
+  height: 2px;
+  background-color: white;
+}
+#velIndicatorId{
+  position: absolute;
+  top: calc(50% - 16px);
+  border-top: 2px solid white;
+  border-bottom: 2px solid white;
+  background-color: rgba(248, 255, 206, 0.384);
+  width: 100%;
+  height: 32px;
+}
+
   </style>
 </head>
 <body>
+  <div id="mainHUDId">
+    <div id="velocityMainDivId">
+      <div id="velIndicatorId"></div>
+      <div class="" id="velocityStepsDivId">
+
+        
+
+        <span>50</span>
+        <div class="seperator"></div>
+        <span>40</span>
+        <div class="seperator"></div>
+        <span>30</span>
+        <div class="seperator"></div>
+        <span>20</span>
+        <div class="seperator"></div>
+        <span>10</span>
+        <div class="seperator"></div>
+        <span>00</span>
+        <div class="seperator"></div>
+        
+      </div>
+    </div>
+  </div>
 <div style="display: flex">
   <button onclick="resetParticle()" style="margin: 10px;">Reset</button>
   <p id="velocityInfoId"></p>
@@ -392,7 +472,13 @@
       let velocityMagnitude = Math.sqrt(vx * vx + vy * vy);
 
       let pElement = document.getElementById('velocityInfoId');
+      updateVelocityHUD(velocityMagnitude);
       pElement.textContent = `Velocity: ${velocityMagnitude.toFixed(2)} px/frame`; 
+    }
+
+    function updateVelocityHUD(velocityMagnitude){
+      let HUDPosition = document.getElementById('velocityStepsDivId');
+      HUDPosition.style.bottom = `${-velocityMagnitude.toFixed(2)* 100 +516}px`;
     }
 
     // Reset particle
