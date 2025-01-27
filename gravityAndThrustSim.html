@@ -29,11 +29,16 @@
     #gravityCanvas { z-index: 2; }
     #flickerCanvas { z-index: 1; }
     #starryBg      { z-index: 0; }
+
+    #velocityInfoId{color: white;}
   </style>
 </head>
 <body>
-
+<div style="display: flex">
   <button onclick="resetParticle()" style="margin: 10px;">Reset</button>
+  <p id="velocityInfoId"></p>
+</div>
+  
   
   <div class="canvas-container">
     <!-- 1) Static star background -->
@@ -212,7 +217,7 @@
 
     // Constants
     const G = 0.5;
-    const THRUST_FORCE = 0.06;
+    const THRUST_FORCE = 0.07;
     const THRUST_DISPLAY_TIME = 15;
 
     let lastMousePos = { x: 0, y: 0 };
@@ -376,7 +381,18 @@
 
       drawThrustIndicators(particle);
 
+      drawVelocityInfo(particle.vx, particle.vy);
+
       requestAnimationFrame(update);
+    }
+
+    function drawVelocityInfo(vx, vy){
+
+      ///calc magnitude of velocity:
+      let velocityMagnitude = Math.sqrt(vx * vx + vy * vy);
+
+      let pElement = document.getElementById('velocityInfoId');
+      pElement.textContent = `Velocity: ${velocityMagnitude.toFixed(2)} px/frame`; 
     }
 
     // Reset particle
@@ -413,7 +429,7 @@ function calculateFuturePath() {
   };
 
   const tempPath = [];
-  const steps = 800; // Number of steps to predict
+  const steps = 3000; // Number of steps to predict
   const dt = 1; // Time increment, e.g., "1 frame’s worth"
 
   collisionPoint = null; // Reset collision point
@@ -477,7 +493,7 @@ function drawFuturePath() {
     ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)'; // Default yellow for no collision
   }
 
-  ctx.setLineDash([5, 5]);
+  ctx.setLineDash([2, 3]);
   ctx.lineWidth = 1.5;
   ctx.stroke();
   ctx.setLineDash([]); // Reset dash
