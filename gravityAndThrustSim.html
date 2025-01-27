@@ -696,6 +696,8 @@ function drawFuturePath() {
       ctx.beginPath();
       ctx.arc(collisionPoint.x, collisionPoint.y, 4, 0, Math.PI * 2);
       ctx.fill();
+
+      document.getElementById('collisionMainDivId').style.display="none";
     }
   }
 }
