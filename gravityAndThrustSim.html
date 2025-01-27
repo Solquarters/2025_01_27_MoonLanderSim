@@ -43,6 +43,7 @@
     #velocityInfoId{color: white;}
     
 #mainHUDId{
+  pointer-events: none;
   position: absolute;
   z-index: 10;
   width:100%; 
@@ -62,23 +63,39 @@
   overflow: hidden;
 }
 #velocityStepsDivId{
-  height: 800px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-around;
   color: white;
   position: relative;
   transition: all 180ms ease-in-out;
-  bottom: 516px;
+  bottom: 542px;
  
 }
 .seperator{
   width: 50%;
   height: 2px;
+  border-radius: 4px;
   background-color: white;
 }
+.seperator2{
+  width: 100%;
+  height: 2px;
+  border-radius: 4px;
+  background-color: rgba(255,184,0,1);
+  display: flex;
+  justify-content: center;
+}
+.seperator3{
+  width: 100%;
+  height: 2px;
+  border-radius: 4px;
+  background-color: rgb(255, 0, 0);
+  display: flex;
+  justify-content: center;
+}
 #velIndicatorId{
+  z-index: 9;
   position: absolute;
   top: calc(50% - 16px);
   border-top: 2px solid white;
@@ -87,28 +104,72 @@
   width: 100%;
   height: 32px;
 }
+.single-speed-div-class{
+  width: 100%;
+  height: 128px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.orange-gradient-class {
+  background: linear-gradient(180deg, 
+    rgba(255,184,0,1) 0%,
+    rgb(153, 92, 0) 50%,
+    rgb(0, 0, 0) 100%
+  );
+}
+.orange-red-gradient-class{
+  background: linear-gradient(-180deg, rgb(255, 0, 0) 0%, rgba(255,184,0,1) 100%);
+}
+.red-class{
+  background-color: red;
+}
+.green-class{
+  background: linear-gradient(180deg, rgba(0,0,0,1) 0%, rgba(0,255,0,1) 100%, rgba(0,255,0,1) 100%);
+}
 
   </style>
 </head>
 <body>
-  <div id="mainHUDId">
+  <div id="mainHUDId" onclick="">
     <div id="velocityMainDivId">
       <div id="velIndicatorId"></div>
       <div class="" id="velocityStepsDivId">
 
         
+        <div class="single-speed-div-class red-class">
+          <span>50</span>
+        </div>
+        
+        <div class="seperator3">
+          <div class="seperator"></div>
+        </div>
 
-        <span>50</span>
+        <div class="single-speed-div-class red-class">
+          <span>40</span>
+        </div>
+        <div class="seperator3">
+          <div class="seperator"></div>
+        </div>
+        <div class="single-speed-div-class orange-red-gradient-class">
+          <span>30</span>
+        </div>
+
+        <div class="seperator2">
+          <div class="seperator"></div>
+        </div>
+
+        <div class="single-speed-div-class orange-gradient-class">
+          <span>20</span>
+        </div>
         <div class="seperator"></div>
-        <span>40</span>
+        <div class="single-speed-div-class">
+          <span>10</span>
+        </div>
         <div class="seperator"></div>
-        <span>30</span>
-        <div class="seperator"></div>
-        <span>20</span>
-        <div class="seperator"></div>
-        <span>10</span>
-        <div class="seperator"></div>
-        <span>00</span>
+        <div class="single-speed-div-class green-class">
+          <span>00</span>
+        </div>
         <div class="seperator"></div>
         
       </div>
@@ -478,7 +539,7 @@
 
     function updateVelocityHUD(velocityMagnitude){
       let HUDPosition = document.getElementById('velocityStepsDivId');
-      HUDPosition.style.bottom = `${-velocityMagnitude.toFixed(2)* 100 +516}px`;
+      HUDPosition.style.bottom = `${-velocityMagnitude.toFixed(2)* 100 +542}px`;
     }
 
     // Reset particle
