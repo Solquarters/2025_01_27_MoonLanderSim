@@ -442,25 +442,77 @@
       }
     }
 
-    function calculateGravity() {
-      const dx = centerMass.x - particle.x;
-      const dy = centerMass.y - particle.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+    // function calculateGravity() {
+    //   const dx = centerMass.x - particle.x;
+    //   const dy = centerMass.y - particle.y;
+    //   const distance = Math.sqrt(dx * dx + dy * dy);
       
-      // Stop movement if "collides" with center
-      if (distance < centerMass.radius + particle.radius) {
-        particle.vx = 0;
-        particle.vy = 0;
-        return;
-      }
+    //   // Stop movement if "collides" with center
+    //   if (distance < centerMass.radius + particle.radius) {
+    //     particle.vx = 0;
+    //     particle.vy = 0;
+    //     return;
+    //   }
       
-      // F = G * (m1*m2)/r^2
-      const force = G * (centerMass.mass * particle.mass) / (distance * distance);
-      const angle = Math.atan2(dy, dx);
+    //   // F = G * (m1*m2)/r^2
+    //   const force = G * (centerMass.mass * particle.mass) / (distance * distance);
+    //   const angle = Math.atan2(dy, dx);
       
-      particle.vx += force * Math.cos(angle);
-      particle.vy += force * Math.sin(angle);
+    //   particle.vx += force * Math.cos(angle);
+    //   particle.vy += force * Math.sin(angle);
+    // }
+    // Add this near other constants
+
+let debris = [];
+
+// Modify the calculateGravity function
+function calculateGravity() {
+  const dx = centerMass.x - particle.x;
+  const dy = centerMass.y - particle.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  
+  // Check for collision
+  if (distance < centerMass.radius + particle.radius) {
+    const collisionSpeed = getVelocityMaginute(particle.vx, particle.vy);
+    if (collisionSpeed > COLLISION_SPEED_THRESHOLD) {
+      explodeParticle(collisionSpeed);
+    } else {
+      particle.vx = 0;
+      particle.vy = 0;
     }
+    return;
+  }
+  
+  // Original gravity calculations
+  const force = G * (centerMass.mass * particle.mass) / (distance * distance);
+  const angle = Math.atan2(dy, dx);
+  
+  particle.vx += force * Math.cos(angle);
+  particle.vy += force * Math.sin(angle);
+}
+// Add new explosion function
+function explodeParticle(collisionSpeed) {
+  particle.isActive = false;
+  
+  // Create debris pieces
+  const numDebris = Math.floor(Math.random() * 11) + 50; // 20-30 pieces
+  for (let i = 0; i < numDebris; i++) {
+    debris.push({
+      x: particle.x,
+      y: particle.y,
+      vx: (Math.random() - 0.5) * collisionSpeed,
+      vy: (Math.random() - 0.5) * collisionSpeed,
+      radius: Math.random()+0.35,
+      mass: 0.1,
+      color: `rgb(0, 204, 255)`,
+      isActive: true
+    });
+  }
+}
+
+
+
+
 
     function applyThrust(direction) {
       particle.thrust.active = true;
@@ -532,51 +584,112 @@
       }
     }
 
-    function update() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // function update() {
+    //   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Apply gravity & velocity
-      if (!particle.isDragging) {
-        calculateGravity();
+    //   // Apply gravity & velocity
+    //   if (!particle.isDragging) {
+    //     calculateGravity();
 
-        // Apply thrust if keys are pressed
-        let thrustX = 0, thrustY = 0;
-        if (keysPressed.ArrowLeft)  thrustX -= THRUST_FORCE;
-        if (keysPressed.ArrowRight) thrustX += THRUST_FORCE;
-        if (keysPressed.ArrowUp)    thrustY -= THRUST_FORCE;
-        if (keysPressed.ArrowDown)  thrustY += THRUST_FORCE;
+    //     // Apply thrust if keys are pressed
+    //     let thrustX = 0, thrustY = 0;
+    //     if (keysPressed.ArrowLeft)  thrustX -= THRUST_FORCE;
+    //     if (keysPressed.ArrowRight) thrustX += THRUST_FORCE;
+    //     if (keysPressed.ArrowUp)    thrustY -= THRUST_FORCE;
+    //     if (keysPressed.ArrowDown)  thrustY += THRUST_FORCE;
 
-        particle.vx += thrustX;
-        particle.vy += thrustY;
+    //     particle.vx += thrustX;
+    //     particle.vy += thrustY;
 
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-      }
+    //     particle.x += particle.vx;
+    //     particle.y += particle.vy;
+    //   }
 
-      // Keep track of trail
-      trace.push({ x: particle.x, y: particle.y });
-      if (trace.length > MAX_TRACE_LENGTH) {
-        trace.shift();
-      }
+    //   // Keep track of trail
+    //   trace.push({ x: particle.x, y: particle.y });
+    //   if (trace.length > MAX_TRACE_LENGTH) {
+    //     trace.shift();
+    //   }
 
-      // Draw everything
-      drawTrace();
-      drawCenterMassWithImage(centerMass);
-      drawObject(particle, 'blue');
+    //   // Draw everything
+    //   drawTrace();
+    //   drawCenterMassWithImage(centerMass);
+    //   drawObject(particle, 'blue');
 
-      drawFuturePath();   
+    //   drawFuturePath();   
 
-      drawThrustIndicators(particle);
+    //   drawThrustIndicators(particle);
 
-      drawVelocityInfo(particle.vx, particle.vy);
+    //   drawVelocityInfo(particle.vx, particle.vy);
 
-      requestAnimationFrame(update);
+    //   requestAnimationFrame(update);
+    // }
+
+    // Modify the update function to handle debris
+function update() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (particle.isActive && !particle.isDragging) {
+    calculateGravity();
+    
+    // Existing movement code
+    let thrustX = 0, thrustY = 0;
+    if (keysPressed.ArrowLeft)  thrustX -= THRUST_FORCE;
+    if (keysPressed.ArrowRight) thrustX += THRUST_FORCE;
+    if (keysPressed.ArrowUp)    thrustY -= THRUST_FORCE;
+    if (keysPressed.ArrowDown)  thrustY += THRUST_FORCE;
+
+    particle.vx += thrustX;
+    particle.vy += thrustY;
+
+    particle.x += particle.vx;
+    particle.y += particle.vy;
+  }
+
+  // Update debris
+  debris.forEach((debrisPiece, index) => {
+    const dx = centerMass.x - debrisPiece.x;
+    const dy = centerMass.y - debrisPiece.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance < centerMass.radius + debrisPiece.radius) {
+      debris.splice(index, 1);
+      return;
     }
+
+    const force = G * (centerMass.mass * debrisPiece.mass) / (distance * distance);
+    const angle = Math.atan2(dy, dx);
+    
+    debrisPiece.vx += force * Math.cos(angle);
+    debrisPiece.vy += force * Math.sin(angle);
+    debrisPiece.x += debrisPiece.vx;
+    debrisPiece.y += debrisPiece.vy;
+  });
+
+  // Draw all elements
+  drawTrace();
+  drawCenterMassWithImage(centerMass);
+  
+  // Draw particle if active
+  if (particle.isActive) {
+    drawObject(particle, 'blue');
+    drawThrustIndicators(particle);
+  }
+  
+  // Draw debris
+  debris.forEach(debrisPiece => {
+    drawObject(debrisPiece, debrisPiece.color);
+  });
+
+  drawFuturePath();
+  drawVelocityInfo(particle.vx, particle.vy);
+  requestAnimationFrame(update);
+}
 
     function drawVelocityInfo(vx, vy){
 
       ///calc magnitude of velocity:
-      let velocityMagnitude = Math.sqrt(vx * vx + vy * vy);
+      let velocityMagnitude = getVelocityMaginute(vx, vy);
 
       let pElement = document.getElementById('velocityInfoId');
       updateVelocityHUD(velocityMagnitude);
@@ -588,21 +701,26 @@
       HUDPosition.style.bottom = `${-velocityMagnitude.toFixed(2)* 100 +542}px`;
     }
 
-    // Reset particle
-    function resetParticle() {
-      particle.x = 100;
-      particle.y = 200;
-      particle.vx = 0;
-      particle.vy = 0;
-      particle.isDragging = false;
-      particle.thrust.active = false;
-      particle.thrust.timer = 0;
-      trace.length = 0; 
-
-      futurePath = calculateFuturePath();
-
-
+    function getVelocityMaginute(vx, vy){
+      let velocityMagnitude = Math.sqrt(vx * vx + vy * vy);
+      return velocityMagnitude;
     }
+    // Reset particle
+    // Update the reset function
+function resetParticle() {
+  particle.x = 100;
+  particle.y = 200;
+  particle.vx = 0;
+  particle.vy = 0;
+  particle.isDragging = false;
+  particle.thrust.active = false;
+  particle.thrust.timer = 0;
+  particle.isActive = true;
+  trace.length = 0;
+  debris = [];
+  futurePath = calculateFuturePath();
+}
+
 
   /****************************************************
  * PART 4: FUTURE PATH PROJECTION
@@ -613,6 +731,7 @@ let collisionSpeed = 0; // Store the speed at collision
 const COLLISION_SPEED_THRESHOLD = 1.5; // Tweak this value as needed
 
 function calculateFuturePath() {
+  if (!particle.isActive) return [];
   // Backup current real state
   const backup = {
     x: particle.x,
@@ -721,6 +840,7 @@ function drawFuturePath() {
 
     // Start the gravity simulation
     update();
+    resetParticle();
     futurePath = calculateFuturePath();
   </script>
 </body>
