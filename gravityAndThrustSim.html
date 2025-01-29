@@ -475,7 +475,8 @@ function calculateGravity() {
   if (distance < centerMass.radius + particle.radius) {
     const collisionSpeed = getVelocityMaginute(particle.vx, particle.vy);
     if (collisionSpeed > COLLISION_SPEED_THRESHOLD) {
-      explodeParticle(collisionSpeed);
+      explodeParticle(collisionSpeed, particle.vx, particle.vy);
+      
     } else {
       particle.vx = 0;
       particle.vy = 0;
@@ -491,7 +492,7 @@ function calculateGravity() {
   particle.vy += force * Math.sin(angle);
 }
 // Add new explosion function
-function explodeParticle(collisionSpeed) {
+function explodeParticle(collisionSpeed, particlevx, particlevy) {
   particle.isActive = false;
   
   // Create debris pieces
@@ -500,8 +501,8 @@ function explodeParticle(collisionSpeed) {
     debris.push({
       x: particle.x,
       y: particle.y,
-      vx: (Math.random() - 0.5) * collisionSpeed,
-      vy: (Math.random() - 0.5) * collisionSpeed,
+      vx: (Math.random() - 0.5 + particlevx*(0.02)) * collisionSpeed,
+      vy: (Math.random() - 0.5 + particlevy*(0.02)) * collisionSpeed,
       radius: Math.random()+0.35,
       mass: 0.1,
       color: `rgb(0, 204, 255)`,
@@ -647,24 +648,55 @@ function update() {
   }
 
   // Update debris
-  debris.forEach((debrisPiece, index) => {
-    const dx = centerMass.x - debrisPiece.x;
-    const dy = centerMass.y - debrisPiece.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+  // debris.forEach((debrisPiece, index) => {
+  //   const dx = centerMass.x - debrisPiece.x;
+  //   const dy = centerMass.y - debrisPiece.y;
+  //   const distance = Math.sqrt(dx * dx + dy * dy);
     
-    if (distance < centerMass.radius + debrisPiece.radius) {
-      debris.splice(index, 1);
-      return;
-    }
+  //   if (distance < centerMass.radius + debrisPiece.radius) {
+  //     debris.splice(index, 1);
+  //     return;
+  //   }
 
+  //   const force = G * (centerMass.mass * debrisPiece.mass) / (distance * distance);
+  //   const angle = Math.atan2(dy, dx);
+    
+  //   debrisPiece.vx += force * Math.cos(angle);
+  //   debrisPiece.vy += force * Math.sin(angle);
+  //   debrisPiece.x += debrisPiece.vx;
+  //   debrisPiece.y += debrisPiece.vy;
+  // });
+
+  debris.forEach((debrisPiece, index) => {
+  // If already landed, skip gravity/velocity:
+  if (debrisPiece.landed) {
+    return; 
+  }
+
+  // ... otherwise do the usual gravity stuff ...
+  const dx = centerMass.x - debrisPiece.x;
+  const dy = centerMass.y - debrisPiece.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  // If debris intersects the planet:
+  if (distance <= centerMass.radius + debrisPiece.radius) {
+    // Snap to surface, set velocity = 0, mark landed
+    const angle = Math.atan2(dy, dx);
+    debrisPiece.x = centerMass.x - (centerMass.radius + debrisPiece.radius) * Math.cos(angle);
+    debrisPiece.y = centerMass.y - (centerMass.radius + debrisPiece.radius) * Math.sin(angle);
+    debrisPiece.vx = 0;
+    debrisPiece.vy = 0;
+    debrisPiece.landed = true;
+  } else {
+    // Otherwise apply gravity as normal
     const force = G * (centerMass.mass * debrisPiece.mass) / (distance * distance);
     const angle = Math.atan2(dy, dx);
-    
     debrisPiece.vx += force * Math.cos(angle);
     debrisPiece.vy += force * Math.sin(angle);
     debrisPiece.x += debrisPiece.vx;
     debrisPiece.y += debrisPiece.vy;
-  });
+  }
+});
 
   // Draw all elements
   drawTrace();
@@ -674,6 +706,9 @@ function update() {
   if (particle.isActive) {
     drawObject(particle, 'blue');
     drawThrustIndicators(particle);
+  }else{
+    ////REMOVE EXPLOSION SYMBOL HERE
+    
   }
   
   // Draw debris
@@ -813,7 +848,7 @@ function drawFuturePath() {
   ctx.setLineDash([]); // Reset dash
 
   // Draw collision indicator
-  if (collisionPoint) {
+  if (collisionPoint && particle.isActive) {
     if (collisionSpeed > COLLISION_SPEED_THRESHOLD) {
       // Draw red "X" for high-speed collision
       ctx.fillStyle = 'red';
