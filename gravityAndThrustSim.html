@@ -496,14 +496,14 @@ function explodeParticle(collisionSpeed, particlevx, particlevy) {
   particle.isActive = false;
   
   // Create debris pieces
-  const numDebris = Math.floor(Math.random() * 11) + 50; // 20-30 pieces
+  const numDebris = Math.floor(Math.random() * 11) + 100; // 20-30 pieces
   for (let i = 0; i < numDebris; i++) {
     debris.push({
       x: particle.x,
       y: particle.y,
       vx: (Math.random() - 0.5 + particlevx*(0.02)) * collisionSpeed,
       vy: (Math.random() - 0.5 + particlevy*(0.02)) * collisionSpeed,
-      radius: Math.random()+0.35,
+      radius: Math.random(),
       mass: 0.1,
       color: `rgb(0, 204, 255)`,
       isActive: true
@@ -698,6 +698,12 @@ function update() {
   }
 });
 
+   // Keep track of trail
+      trace.push({ x: particle.x, y: particle.y });
+      if (trace.length > MAX_TRACE_LENGTH) {
+        trace.shift();
+      }
+
   // Draw all elements
   drawTrace();
   drawCenterMassWithImage(centerMass);
@@ -706,9 +712,6 @@ function update() {
   if (particle.isActive) {
     drawObject(particle, 'blue');
     drawThrustIndicators(particle);
-  }else{
-    ////REMOVE EXPLOSION SYMBOL HERE
-    
   }
   
   // Draw debris
