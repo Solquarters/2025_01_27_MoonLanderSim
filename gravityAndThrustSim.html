@@ -147,6 +147,25 @@
   animation: warningBlink 1s step-end infinite;
 }
 
+.signalParentWrapperDivClass{
+  position: absolute;
+  top: 2%;
+  left: calc(50% - 150px);
+  border: 4px solid rgba(255, 255, 255, 0.829);
+  border-radius: 4px;
+  height: 48px;
+  width: 320px;
+  overflow: hidden;
+  color: white;
+  font-size: 24px;
+  font-weight: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000333;
+  animation: smoothPulse 2s ease-out infinite;
+}
+
 .collisionWrapperDiv {
   width: calc(100% - 10px); /* Subtract the border width to maintain layout */
   height: calc(100% - 10px);
@@ -157,7 +176,40 @@
   align-items: center;
   background: radial-gradient(circle, rgba(255,162,0,1) 25%, rgba(255,0,0,1) 100%);
 }
+.greenSignalWrapperDiv {
+  width: calc(100% - 10px); /* Subtract the border width to maintain layout */
+  height: calc(100% - 10px);
+  margin: 4px;
+  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle, rgb(0, 94, 16) 25%, rgba(7, 207, 0, 0.822) 100%);
+}
+
+
+#resetButtonMainDivId{
+  display: none;
+  text-align: center;
+ 
+}
+.resetButtonMainDiv{
+ 
+}
+
+
 @keyframes warningBlink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes smoothPulse {
   0% {
     opacity: 1;
   }
@@ -172,6 +224,17 @@
 </head>
 <body>
   <div id="mainHUDId" onclick="">
+
+    <div class="resetButtonMainDiv" id="resetButtonMainDivId">
+      <div class="signalParentWrapperDivClass">
+        <div class="greenSignalWrapperDiv">
+          [SPACE] to rewind to past
+         </div>
+
+      </div>
+      
+    </div>
+
     <div class="" id="collisionMainDivId">
       <div class="collisionWrapperDiv">
         ON COLLISION COURSE
@@ -377,7 +440,13 @@
       // Once thrust is truly finished, recalc the future path:
       futurePath = calculateFuturePath();
     }
+    if (event.code === 'Space') {
+    resetParticle();
+  }
     });
+
+    
+
 
     // Center mass and particle
     const centerMass = {
@@ -476,6 +545,9 @@ function calculateGravity() {
     const collisionSpeed = getVelocityMaginute(particle.vx, particle.vy);
     if (collisionSpeed > COLLISION_SPEED_THRESHOLD) {
       explodeParticle(collisionSpeed, particle.vx, particle.vy);
+
+      deleteCollisionWarningButton();
+      displayResetButton();
       
     } else {
       particle.vx = 0;
@@ -512,7 +584,12 @@ function explodeParticle(collisionSpeed, particlevx, particlevy) {
 }
 
 
-
+function displayResetButton(){
+  document.getElementById('resetButtonMainDivId').style.display = "flex";
+}
+function hideDisplayButton(){
+  document.getElementById('resetButtonMainDivId').style.display = "none";
+}
 
 
     function applyThrust(direction) {
@@ -757,6 +834,9 @@ function resetParticle() {
   trace.length = 0;
   debris = [];
   futurePath = calculateFuturePath();
+
+
+  hideDisplayButton();
 }
 
 
@@ -866,12 +946,15 @@ function drawFuturePath() {
       ctx.arc(collisionPoint.x, collisionPoint.y, 4, 0, Math.PI * 2);
       ctx.fill();
 
-      document.getElementById('collisionMainDivId').style.display="none";
+      deleteCollisionWarningButton();
     }
   }
 }
 
 
+function deleteCollisionWarningButton(){
+  document.getElementById('collisionMainDivId').style.display="none";
+}
 
 
 
