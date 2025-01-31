@@ -173,11 +173,10 @@
       .signalParentWrapperDivClass {
         position: absolute;
         top: 2%;
-        left: calc(50% - 150px);
+        left: calc(50% - 164px);
         border: 4px solid rgba(255, 255, 255, 0.829);
         border-radius: 4px;
         height: 48px;
-        /* width: 320px; */
         overflow: hidden;
         color: white;
         font-size: 24px;
@@ -190,9 +189,7 @@
       }
 
       .collisionWrapperDiv {
-        width: calc(
-          100% - 10px
-        ); /* Subtract the border width to maintain layout */
+        width: calc(100%); 
         height: calc(100% - 10px);
         margin: 4px;
         border-radius: 2px;
@@ -206,9 +203,8 @@
         );
       }
       .greenSignalWrapperDiv {
-        width: calc(
-          100% 
-        ); /* Subtract the border width to maintain layout */
+        cursor: pointer;
+        width: calc(100%); 
         height: calc(100% - 10px);
         margin: 4px;
        padding: 0px 8px;
@@ -235,6 +231,10 @@
         height: 30%;
         width: 24px;
         overflow: hidden;
+
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
       }
 
       .fuelMainDivClass {
@@ -251,24 +251,32 @@
         justify-content: center;
       }
       .fuelAmountDivClass {
-        width: 100%;
-        background-color: rgb(223, 223, 223);
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-      }
-      .oxygenAmountDivClass {
-        background: linear-gradient(to bottom, rgb(9, 255, 0, 1) 40%, rgb(255, 0, 0));
+        
+        background: radial-gradient( rgb(255, 255, 255), rgb(0, 0, 0));
         display: flex;
         align-items: flex-end;
         justify-content: center;
         color: white;
+        border-top: 1px solid rgb(65, 65, 65);
       }
-      #oxygenAmountDiv {
-        height: 100%;
+      .oxygenAmountDivClass {
+        /* background: linear-gradient(to bottom, rgb(9, 255, 0, 1) 40%, rgb(255, 0, 0)); */
+        background: radial-gradient( rgb(0, 217, 255), rgb(0, 49, 53));
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        color: white;
+       
+     
+      }
+      #oxygenAmountDivId {
+        height: 80%;
+        border-top: 1px solid rgb(0, 78, 72);
+        transition: height 200ms ease-in-out;
       }
       #fuelAmountDivId {
-        height: 30%;
+        height: 80%;
+        transition: height 200ms ease-in-out;
       }
 
       .missionTimerMainDivClass{
@@ -285,6 +293,12 @@
       }
       .velocityrMainDivClass{
         color: rgb(81, 255, 0);
+      }
+
+      .guidanceComputerInterfaceMainDivClass{
+        padding: 8px 16px;
+        display: flex;
+        gap: 32px;
       }
      
      
@@ -316,7 +330,7 @@
   <body>
     <div id="mainHUDId" onclick="">
       <div class="oxygenMainDivClass">
-        <div class="oxygenAmountDivClass" id="oxygenAmountDiv">
+        <div class="oxygenAmountDivClass" id="oxygenAmountDivId">
           <span>O²</span>
         </div>
       </div>
@@ -379,7 +393,7 @@
         </div>
       </div>
     </div>
-    <div style="display: flex; flex-direction: column;">
+    <div class="guidanceComputerInterfaceMainDivClass" >
       <!-- <button onclick="resetParticle()" style="margin: 10px;">Reset</button> -->
        <div class="velocityrMainDivClass">
         <p>VELOCITY: </p><span id="velocityInfoId"></span> px/frame
@@ -751,6 +765,9 @@
         }
       }
 
+
+
+
       // Modify the update function to handle debris
       function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -764,20 +781,26 @@
 
           // Existing movement code
           let thrustX = 0,
-            thrustY = 0;
-          if (keysPressed.ArrowLeft) thrustX -= THRUST_FORCE;
-          if (keysPressed.ArrowRight) thrustX += THRUST_FORCE;
-          if (keysPressed.ArrowUp) thrustY -= THRUST_FORCE;
-          if (keysPressed.ArrowDown) thrustY += THRUST_FORCE;
+          thrustY = 0;
+          const isThrusting = Object.values(keysPressed).some(key => key);
 
-          particle.vx += thrustX;
-          particle.vy += thrustY;
+          // Only apply thrust if we have fuel
+        if (updateFuel(missionTimer.getTime(), isThrusting)) {
+            if (keysPressed.ArrowLeft) thrustX -= THRUST_FORCE;
+            if (keysPressed.ArrowRight) thrustX += THRUST_FORCE;
+            if (keysPressed.ArrowUp) thrustY -= THRUST_FORCE;
+            if (keysPressed.ArrowDown) thrustY += THRUST_FORCE;
 
-          particle.x += particle.vx;
-          particle.y += particle.vy;
-        }else {
-        missionTimer.stop(); // Stop the timer if the mission ends (e.g., collision)
+            particle.vx += thrustX;
+            particle.vy += thrustY;
+        }
+
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+    } else {
+        missionTimer.stop();
     }
+
 
         debris.forEach((debrisPiece, index) => {
           // If already landed, skip gravity/velocity:
@@ -842,6 +865,8 @@
 
         // Update timer display each frame
     missionTimer.updateDisplay();
+    
+    reduceOxygenAmount(missionTimer.getTime());
 
         requestAnimationFrame(update);
       }
@@ -860,6 +885,73 @@
     // Combine with dot separator
     pElement.textContent = `${wholePart} . ${decimalPart}`;
 }
+
+      
+const OXYGEN_REDUCTION_RATE = 0.5;  // % per second
+let lastOxygenUpdate = 0;
+
+function reduceOxygenAmount(elapsedTime) {
+    // Only reduce oxygen if particle is active
+    if (!particle.isActive) return;
+    
+    const currentSecond = Math.floor(elapsedTime / 1000);
+    console.log(elapsedTime);
+    
+    if (currentSecond > lastOxygenUpdate) {
+        let oxygenContainer = document.getElementById('oxygenAmountDivId');
+        let currentPercentage = parseFloat(oxygenContainer.style.height) || 80; // Default to 80 if not set
+        
+        // Reduce by rate and ensure we don't go below 0
+        let newPercentage = Math.max(0, currentPercentage - OXYGEN_REDUCTION_RATE);
+        oxygenContainer.style.height = newPercentage + '%';
+        
+        lastOxygenUpdate = currentSecond;
+        
+        // Check if oxygen is depleted
+        if (newPercentage <= 0) {
+            // Handle oxygen depletion
+            particle.isActive = false;
+            missionTimer.stop();
+            displayResetButton();
+        }
+    }
+}
+
+
+/////////Fuel Reduction Start /////////
+
+const FUEL_REDUCTION_RATE = 0.6; // % per 0.1 second
+let lastFuelUpdateTime = 0;
+
+function getFuelLevel() {
+    let fuelContainer = document.getElementById('fuelAmountDivId');
+    return parseFloat(fuelContainer.style.height) || 80;
+}
+
+function setFuelLevel(level) {
+    let fuelContainer = document.getElementById('fuelAmountDivId');
+    fuelContainer.style.height = Math.max(0, level) + '%';
+}
+
+function updateFuel(currentTime, isThrusting) {
+    if (!isThrusting) return true;
+
+    const currentTenth = Math.floor(currentTime / 100);
+    const currentFuel = getFuelLevel();
+
+    if (currentFuel <= 0) return false;
+
+    if (currentTenth > lastFuelUpdateTime) {
+        setFuelLevel(currentFuel - FUEL_REDUCTION_RATE);
+        lastFuelUpdateTime = currentTenth;
+    }
+
+    return currentFuel > 0;
+}
+/////////Fuel Reduction End /////////
+
+
+
 
       function updateVelocityHUD(velocityMagnitude) {
         let HUDPosition = document.getElementById("velocityStepsDivId");
@@ -884,6 +976,15 @@
         trace.length = 0;
         debris = [];
         futurePath = calculateFuturePath();
+
+         // Reset oxygen level
+    let oxygenContainer = document.getElementById('oxygenAmountDivId');
+    oxygenContainer.style.height = '80%';
+    lastOxygenUpdate = 0;
+
+    //Reset fuelLevel
+    setFuelLevel(80);
+    lastFuelUpdateTime = 0;
 
         if(missionTimer){
           missionTimer.reset();
