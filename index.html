@@ -303,6 +303,10 @@
         display: flex;
         gap: 32px;
       }
+      .trainingObjectivesMainDivClass{
+display: flex;
+color: rgb(54, 54, 54);
+      }
 
       @keyframes warningBlink {
         0% {
@@ -407,15 +411,20 @@
         <p id="missionTimerId"></p>
       </div>
 
-      <span style="color: white">
-        <!-- <br> digitaler timer,rotation der ausrichtung, debugge raumschiff verschwindet im mond, responsiveness...
-    <br><b>Missionen:</b> Lande an Stelle X bevor Oxygen leer ist 
-    <br> umkreise einmal und fliege nach Korridor 
-    <br> lande und starte und lande wieder an X stellen 
-    <br> Umkreise in geringstmöglicher Höhe in X Zeit 
-    <br> Führe ein Katapult manöver durch, erreiche X speed +treffe einen Korridor mit X Treibstoff
-    <br>Mondphasen -->
-      </span>
+      <div class="trainingObjectivesMainDivClass">
+        <span>
+          Mission objectives: 
+          <br>1. Land at X before Oxygen or fuel runs out.
+          <br>2. Orbit once and fly to corridor.
+          <br>3. Land and take off and land again at X positions.
+          <br>4. Orbit at lowest possible altitude in X time
+          <br>5. Perform a catapult maneuver, reach X speed + hit a corridor with X fuel.
+          </span>
+    
+      
+   <!-- <span>ToDos...Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...</span>  -->
+      </div>
+      
     </div>
 
     <div class="canvas-container">
@@ -981,8 +990,8 @@
       // Reset particle
       // Update the reset function
       function resetParticle() {
-        particle.x = 600;
-        particle.y = 280;
+        particle.x = 100;
+        particle.y = 100;
         particle.vx = 0;
         particle.vy = 0;
 
