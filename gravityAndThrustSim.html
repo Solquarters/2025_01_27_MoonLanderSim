@@ -77,13 +77,18 @@
         overflow: hidden;
       }
       #velocityStepsDivId {
+        position: absolute;
         display: flex;
         flex-direction: column;
         align-items: center;
         color: white;
         position: relative;
         transition: all 180ms ease-in-out;
-        bottom: 520px;
+        /* bottom: 520px; */
+         /* bottom: 520px; */
+          /* bottom: 520px; */
+           /* bottom: 520px; */
+           bottom: 512px;
       }
       .seperator {
         width: 50%;
@@ -951,12 +956,10 @@ function updateFuel(currentTime, isThrusting) {
 /////////Fuel Reduction End /////////
 
 
-
-
-      function updateVelocityHUD(velocityMagnitude) {
-        let HUDPosition = document.getElementById("velocityStepsDivId");
-        HUDPosition.style.bottom = `${-velocityMagnitude.toFixed(2) * 100 + 520}px`;
-      }
+function updateVelocityHUD(velocityMagnitude) {
+  let HUDPosition = document.getElementById("velocityStepsDivId");
+  HUDPosition.style.bottom = `${-velocityMagnitude * 128 + 512}px`;
+}
 
       function getVelocityMaginute(vx, vy) {
         let velocityMagnitude = Math.sqrt(vx * vx + vy * vy);
