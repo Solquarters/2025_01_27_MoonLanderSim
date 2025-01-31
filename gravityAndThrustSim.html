@@ -55,8 +55,6 @@
         z-index: 0;
       }
 
-      
-
       #mainHUDId {
         /* pointer-events: none; */
         position: absolute;
@@ -67,12 +65,13 @@
       }
 
       #velocityMainDivId {
+        height: 50vh;
+        min-height: 300px;
         position: absolute;
         top: 25%;
         left: 5%;
         border: 2px solid rgba(255, 255, 255, 0.829);
         border-radius: 4px;
-        height: 50%;
         width: 48px;
         overflow: hidden;
       }
@@ -83,31 +82,28 @@
         align-items: center;
         color: white;
         position: relative;
-        transition: all 180ms ease-in-out;
-        /* bottom: 520px; */
-         /* bottom: 520px; */
-          /* bottom: 520px; */
-           /* bottom: 520px; */
-           bottom: 512px;
+        transition: all 50ms ease-in-out;
+
+        bottom: 0;
+        transform: translateY(0);
       }
       .seperator {
         width: 50%;
         height: 2px;
-        border-radius: 4px;
         background-color: white;
+        display: flex;
       }
       .seperator2 {
+        border: none;
         width: 100%;
         height: 2px;
-        border-radius: 4px;
         background-color: rgba(255, 184, 0, 1);
         display: flex;
         justify-content: center;
       }
       .seperator3 {
+        border: none;
         width: 100%;
-        height: 2px;
-        border-radius: 4px;
         background-color: rgb(255, 0, 0);
         display: flex;
         justify-content: center;
@@ -123,8 +119,10 @@
         height: 32px;
       }
       .single-speed-div-class {
+        height: 10vh;
+        min-height: 50px;
         width: 100%;
-        height: 128px;
+        /* height: 128px; */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -194,7 +192,7 @@
       }
 
       .collisionWrapperDiv {
-        width: calc(100%); 
+        width: calc(100%);
         height: calc(100% - 10px);
         margin: 4px;
         border-radius: 2px;
@@ -209,10 +207,10 @@
       }
       .greenSignalWrapperDiv {
         cursor: pointer;
-        width: calc(100%); 
+        width: calc(100%);
         height: calc(100% - 10px);
         margin: 4px;
-       padding: 0px 8px;
+        padding: 0px 8px;
         border-radius: 2px;
         display: flex;
         justify-content: center;
@@ -256,8 +254,7 @@
         justify-content: center;
       }
       .fuelAmountDivClass {
-        
-        background: radial-gradient( rgb(255, 255, 255), rgb(0, 0, 0));
+        background: radial-gradient(rgb(255, 255, 255), rgb(0, 0, 0));
         display: flex;
         align-items: flex-end;
         justify-content: center;
@@ -266,13 +263,11 @@
       }
       .oxygenAmountDivClass {
         /* background: linear-gradient(to bottom, rgb(9, 255, 0, 1) 40%, rgb(255, 0, 0)); */
-        background: radial-gradient( rgb(0, 217, 255), rgb(0, 49, 53));
+        background: radial-gradient(rgb(0, 217, 255), rgb(0, 49, 53));
         display: flex;
         align-items: flex-end;
         justify-content: center;
         color: white;
-       
-     
       }
       #oxygenAmountDivId {
         height: 80%;
@@ -284,11 +279,10 @@
         transition: height 200ms ease-in-out;
       }
 
-      .missionTimerMainDivClass{
-        
+      .missionTimerMainDivClass {
         color: rgb(81, 255, 0);
       }
-      #missionTimerId{
+      #missionTimerId {
         font-family: "DSEG7Modern";
       }
 
@@ -296,17 +290,15 @@
         color: rgb(81, 255, 0);
         font-family: "DSEG7Modern";
       }
-      .velocityrMainDivClass{
+      .velocityrMainDivClass {
         color: rgb(81, 255, 0);
       }
 
-      .guidanceComputerInterfaceMainDivClass{
+      .guidanceComputerInterfaceMainDivClass {
         padding: 8px 16px;
         display: flex;
         gap: 32px;
       }
-     
-     
 
       @keyframes warningBlink {
         0% {
@@ -362,7 +354,7 @@
         <div id="velIndicatorId"></div>
         <div class="" id="velocityStepsDivId">
           <div class="single-speed-div-class red-class">
-            <span>5.0</span>
+            <span>5.5</span>
           </div>
 
           <div class="seperator3">
@@ -370,13 +362,13 @@
           </div>
 
           <div class="single-speed-div-class red-class">
-            <span>4.0</span>
+            <span>4.5</span>
           </div>
           <div class="seperator3">
             <div class="seperator"></div>
           </div>
           <div class="single-speed-div-class orange-red-gradient-class">
-            <span>3.0</span>
+            <span>3.5</span>
           </div>
 
           <div class="seperator2">
@@ -384,30 +376,31 @@
           </div>
 
           <div class="single-speed-div-class orange-gradient-class">
-            <span>2.0</span>
+            <span>2.5</span>
           </div>
           <div class="seperator"></div>
           <div class="single-speed-div-class">
-            <span>1.0</span>
+            <span>1.5</span>
           </div>
           <div class="seperator"></div>
           <div class="single-speed-div-class green-class">
-            <span>0.0</span>
+            <span>0.5</span>
           </div>
           <div class="seperator"></div>
         </div>
       </div>
     </div>
-    <div class="guidanceComputerInterfaceMainDivClass" >
+    <div class="guidanceComputerInterfaceMainDivClass">
       <!-- <button onclick="resetParticle()" style="margin: 10px;">Reset</button> -->
-       <div class="velocityrMainDivClass">
-        <p>VELOCITY: </p><span id="velocityInfoId"></span> px/frame
-       </div>
+      <div class="velocityrMainDivClass">
+        <p>VELOCITY:</p>
+        <span id="velocityInfoId"></span> px/frame
+      </div>
 
       <div class="missionTimerMainDivClass">
-        <br>
-        MISSION TIME: 
-        <p id="missionTimerId" ></p>
+        <br />
+        MISSION TIME:
+        <p id="missionTimerId"></p>
       </div>
 
       <span style="color: white">
@@ -770,9 +763,6 @@
         }
       }
 
-
-
-
       // Modify the update function to handle debris
       function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -782,15 +772,15 @@
 
           if (!missionTimer.running) {
             missionTimer.start(); // Start the timer if it hasn't started
-        }
+          }
 
           // Existing movement code
           let thrustX = 0,
-          thrustY = 0;
-          const isThrusting = Object.values(keysPressed).some(key => key);
+            thrustY = 0;
+          const isThrusting = Object.values(keysPressed).some((key) => key);
 
           // Only apply thrust if we have fuel
-        if (updateFuel(missionTimer.getTime(), isThrusting)) {
+          if (updateFuel(missionTimer.getTime(), isThrusting)) {
             if (keysPressed.ArrowLeft) thrustX -= THRUST_FORCE;
             if (keysPressed.ArrowRight) thrustX += THRUST_FORCE;
             if (keysPressed.ArrowUp) thrustY -= THRUST_FORCE;
@@ -798,14 +788,13 @@
 
             particle.vx += thrustX;
             particle.vy += thrustY;
+          }
+
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+        } else {
+          missionTimer.stop();
         }
-
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-    } else {
-        missionTimer.stop();
-    }
-
 
         debris.forEach((debrisPiece, index) => {
           // If already landed, skip gravity/velocity:
@@ -869,97 +858,117 @@
         drawVelocityInfo(particle.vx, particle.vy);
 
         // Update timer display each frame
-    missionTimer.updateDisplay();
-    
-    reduceOxygenAmount(missionTimer.getTime());
+        missionTimer.updateDisplay();
+
+        reduceOxygenAmount(missionTimer.getTime());
 
         requestAnimationFrame(update);
       }
 
-     function drawVelocityInfo(vx, vy) {
-    // calc magnitude of velocity:
-    let velocityMagnitude = getVelocityMaginute(vx, vy);
-    
-    let pElement = document.getElementById("velocityInfoId");
-    updateVelocityHUD(velocityMagnitude);
-    
-    // Split the number into whole and decimal parts
-    let wholePart = Math.floor(velocityMagnitude);
-    let decimalPart = (velocityMagnitude - wholePart).toFixed(2).substring(2);
-    
-    // Combine with dot separator
-    pElement.textContent = `${wholePart} . ${decimalPart}`;
-}
+      function drawVelocityInfo(vx, vy) {
+        currentVelocity = getVelocityMaginute(vx, vy);
+        // calc magnitude of velocity:
+        let velocityMagnitude = getVelocityMaginute(vx, vy);
 
-      
-const OXYGEN_REDUCTION_RATE = 0.5;  // % per second
-let lastOxygenUpdate = 0;
+        let pElement = document.getElementById("velocityInfoId");
+        updateVelocityHUD(velocityMagnitude);
 
-function reduceOxygenAmount(elapsedTime) {
-    // Only reduce oxygen if particle is active
-    if (!particle.isActive) return;
-    
-    const currentSecond = Math.floor(elapsedTime / 1000);
-    console.log(elapsedTime);
-    
-    if (currentSecond > lastOxygenUpdate) {
-        let oxygenContainer = document.getElementById('oxygenAmountDivId');
-        let currentPercentage = parseFloat(oxygenContainer.style.height) || 80; // Default to 80 if not set
-        
-        // Reduce by rate and ensure we don't go below 0
-        let newPercentage = Math.max(0, currentPercentage - OXYGEN_REDUCTION_RATE);
-        oxygenContainer.style.height = newPercentage + '%';
-        
-        lastOxygenUpdate = currentSecond;
-        
-        // Check if oxygen is depleted
-        if (newPercentage <= 0) {
+        // Split the number into whole and decimal parts
+        let wholePart = Math.floor(velocityMagnitude);
+        let decimalPart = (velocityMagnitude - wholePart)
+          .toFixed(2)
+          .substring(2);
+
+        // Combine with dot separator
+        pElement.textContent = `${wholePart} . ${decimalPart}`;
+      }
+
+      const OXYGEN_REDUCTION_RATE = 0.5; // % per second
+      let lastOxygenUpdate = 0;
+
+      function reduceOxygenAmount(elapsedTime) {
+        // Only reduce oxygen if particle is active
+        if (!particle.isActive) return;
+
+        const currentSecond = Math.floor(elapsedTime / 1000);
+
+        if (currentSecond > lastOxygenUpdate) {
+          let oxygenContainer = document.getElementById("oxygenAmountDivId");
+          let currentPercentage =
+            parseFloat(oxygenContainer.style.height) || 80; // Default to 80 if not set
+
+          // Reduce by rate and ensure we don't go below 0
+          let newPercentage = Math.max(
+            0,
+            currentPercentage - OXYGEN_REDUCTION_RATE
+          );
+          oxygenContainer.style.height = newPercentage + "%";
+
+          lastOxygenUpdate = currentSecond;
+
+          // Check if oxygen is depleted
+          if (newPercentage <= 0) {
             // Handle oxygen depletion
             particle.isActive = false;
             missionTimer.stop();
             displayResetButton();
+          }
         }
-    }
-}
+      }
 
+      /////////Fuel Reduction Start /////////
 
-/////////Fuel Reduction Start /////////
+      const FUEL_REDUCTION_RATE = 0.6; // % per 0.1 second
+      let lastFuelUpdateTime = 0;
 
-const FUEL_REDUCTION_RATE = 0.6; // % per 0.1 second
-let lastFuelUpdateTime = 0;
+      function getFuelLevel() {
+        let fuelContainer = document.getElementById("fuelAmountDivId");
+        return parseFloat(fuelContainer.style.height) || 80;
+      }
 
-function getFuelLevel() {
-    let fuelContainer = document.getElementById('fuelAmountDivId');
-    return parseFloat(fuelContainer.style.height) || 80;
-}
+      function setFuelLevel(level) {
+        let fuelContainer = document.getElementById("fuelAmountDivId");
+        fuelContainer.style.height = Math.max(0, level) + "%";
+      }
 
-function setFuelLevel(level) {
-    let fuelContainer = document.getElementById('fuelAmountDivId');
-    fuelContainer.style.height = Math.max(0, level) + '%';
-}
+      function updateFuel(currentTime, isThrusting) {
+        if (!isThrusting) return true;
 
-function updateFuel(currentTime, isThrusting) {
-    if (!isThrusting) return true;
+        const currentTenth = Math.floor(currentTime / 100);
+        const currentFuel = getFuelLevel();
 
-    const currentTenth = Math.floor(currentTime / 100);
-    const currentFuel = getFuelLevel();
+        if (currentFuel <= 0) return false;
 
-    if (currentFuel <= 0) return false;
+        if (currentTenth > lastFuelUpdateTime) {
+          setFuelLevel(currentFuel - FUEL_REDUCTION_RATE);
+          lastFuelUpdateTime = currentTenth;
+        }
 
-    if (currentTenth > lastFuelUpdateTime) {
-        setFuelLevel(currentFuel - FUEL_REDUCTION_RATE);
-        lastFuelUpdateTime = currentTenth;
-    }
+        return currentFuel > 0;
+      }
+      /////////Fuel Reduction End /////////
 
-    return currentFuel > 0;
-}
-/////////Fuel Reduction End /////////
+      // function updateVelocityHUD(velocityMagnitude) {
+      //   let HUDPosition = document.getElementById("velocityStepsDivId");
+      //   HUDPosition.style.bottom = `${-velocityMagnitude * 128 + 512}px`;
+      // }
+      // Modified updateVelocityHUD function
+      function updateVelocityHUD(velocityMagnitude) {
+        const velocityStepsDiv = document.getElementById("velocityStepsDivId");
+        const container = document.getElementById("velocityMainDivId");
 
+        // Get fresh measurements each time
+        const stepHeight = document.querySelector(
+          ".single-speed-div-class"
+        ).offsetHeight;
+        const containerHeight = container.offsetHeight;
 
-function updateVelocityHUD(velocityMagnitude) {
-  let HUDPosition = document.getElementById("velocityStepsDivId");
-  HUDPosition.style.bottom = `${-velocityMagnitude * 128 + 512}px`;
-}
+        const baseOffset = containerHeight - stepHeight * (3 / 2) + 4;
+        const translateYValue =
+          (baseOffset - velocityMagnitude * stepHeight) * -1;
+
+        velocityStepsDiv.style.transform = `translateY(${translateYValue}px)`;
+      }
 
       function getVelocityMaginute(vx, vy) {
         let velocityMagnitude = Math.sqrt(vx * vx + vy * vy);
@@ -968,8 +977,8 @@ function updateVelocityHUD(velocityMagnitude) {
       // Reset particle
       // Update the reset function
       function resetParticle() {
-        particle.x = 100;
-        particle.y = 200;
+        particle.x = 600;
+        particle.y = 290;
         particle.vx = 0;
         particle.vy = 0;
 
@@ -980,16 +989,16 @@ function updateVelocityHUD(velocityMagnitude) {
         debris = [];
         futurePath = calculateFuturePath();
 
-         // Reset oxygen level
-    let oxygenContainer = document.getElementById('oxygenAmountDivId');
-    oxygenContainer.style.height = '80%';
-    lastOxygenUpdate = 0;
+        // Reset oxygen level
+        let oxygenContainer = document.getElementById("oxygenAmountDivId");
+        oxygenContainer.style.height = "80%";
+        lastOxygenUpdate = 0;
 
-    //Reset fuelLevel
-    setFuelLevel(80);
-    lastFuelUpdateTime = 0;
+        //Reset fuelLevel
+        setFuelLevel(80);
+        lastFuelUpdateTime = 0;
 
-        if(missionTimer){
+        if (missionTimer) {
           missionTimer.reset();
           // missionTimer.start();
         }
@@ -1024,7 +1033,7 @@ function updateVelocityHUD(velocityMagnitude) {
 
         // Simulate forward in small steps
         for (let i = 0; i < steps; i++) {
-          // Apply gravity (same as in your update())
+          // Apply gravity 
           const dx = centerMass.x - particle.x;
           const dy = centerMass.y - particle.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -1042,7 +1051,7 @@ function updateVelocityHUD(velocityMagnitude) {
             collisionPoint = { x: particle.x, y: particle.y };
             collisionSpeed = Math.sqrt(
               particle.vx * particle.vx + particle.vy * particle.vy
-            ); // Calculate speed
+            ); 
 
             document.getElementById("collisionMainDivId").style.display =
               "flex";
@@ -1116,78 +1125,88 @@ function updateVelocityHUD(velocityMagnitude) {
         document.getElementById("collisionMainDivId").style.display = "none";
       }
 
-
       /****************************************************
        * PART 5: MISSION TIMER
        ****************************************************/
       class MissionTimer {
-    constructor(displayElementId) {
-        this.displayElement = document.getElementById(displayElementId);
-        this.startTime = 0;
-        this.elapsedTime = 0;
-        this.running = false;
-        this.intervalId = null;
-    }
+        constructor(displayElementId) {
+          this.displayElement = document.getElementById(displayElementId);
+          this.startTime = 0;
+          this.elapsedTime = 0;
+          this.running = false;
+          this.intervalId = null;
+        }
 
-    start() {
-        if (!this.running) {
+        start() {
+          if (!this.running) {
             this.startTime = performance.now() - this.elapsedTime;
             this.running = true;
             this.updateDisplay();
+          }
         }
-    }
 
-    stop() {
-        if (this.running) {
+        stop() {
+          if (this.running) {
             this.elapsedTime = performance.now() - this.startTime;
             this.running = false;
+          }
         }
-    }
 
-    reset() {
-        this.startTime = performance.now();
-        this.elapsedTime = 0;
-        this.running = true;
-        this.updateDisplay();
-    }
+        reset() {
+          this.startTime = performance.now();
+          this.elapsedTime = 0;
+          this.running = true;
+          this.updateDisplay();
+        }
 
-    getTime() {
-        return this.running ? performance.now() - this.startTime : this.elapsedTime;
-    }
+        getTime() {
+          return this.running
+            ? performance.now() - this.startTime
+            : this.elapsedTime;
+        }
 
-    getFormattedTime() {
-        let time = this.getTime();
-        let milliseconds = Math.floor(time % 1000);
-        let seconds = Math.floor((time / 1000) % 60);
-        let minutes = Math.floor((time / (1000 * 60)) % 60);
-        let hours = Math.floor(time / (1000 * 60 * 60));
+        getFormattedTime() {
+          let time = this.getTime();
+          let milliseconds = Math.floor(time % 1000);
+          let seconds = Math.floor((time / 1000) % 60);
+          let minutes = Math.floor((time / (1000 * 60)) % 60);
+          let hours = Math.floor(time / (1000 * 60 * 60));
 
-        return `${hours.toString().padStart(2, '0')}:` +
-               `${minutes.toString().padStart(2, '0')}:` +
-               `${seconds.toString().padStart(2, '0')} . ` +
-               `${milliseconds.toString().padStart(3, '0')}`;
-    }
+          return (
+            `${hours.toString().padStart(2, "0")}:` +
+            `${minutes.toString().padStart(2, "0")}:` +
+            `${seconds.toString().padStart(2, "0")} . ` +
+            `${milliseconds.toString().padStart(3, "0")}`
+          );
+        }
 
-    updateDisplay() {
-        if (this.displayElement) {
+        updateDisplay() {
+          if (this.displayElement) {
             this.displayElement.textContent = this.getFormattedTime();
-        }
-        if (this.running) {
+          }
+          if (this.running) {
             requestAnimationFrame(() => this.updateDisplay()); // Ensures smooth updating
+          }
         }
-    }
-}
+      }
 
-// Initialize the mission timer
-const missionTimer = new MissionTimer("missionTimerId");
-
-
-
-
+      // Initialize the mission timer
+      const missionTimer = new MissionTimer("missionTimerId");
 
       /// MISSION TIMER END ///
 
+      let currentVelocity = 0;
 
+      // window.addEventListener('resize', () => {
+      //   updateVelocityHUD(currentVelocity);
+      // });
+
+      ///For resizing and to scale velocity visualization
+      document.addEventListener("DOMContentLoaded", () => {
+        // Initial positioning
+        updateVelocityHUD(0);
+        window.dispatchEvent(new Event("resize"));
+      });
 
       // Start the gravity simulation
       update();
