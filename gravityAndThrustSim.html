@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
+    <title>Moon Lander</title>
+    <link rel="icon" type="image/x-icon" href="./img/icons8-lander-topaz-16.png">
+
     <style>
       /* anta-regular - latin */
       @font-face {
@@ -119,7 +123,7 @@
         height: 32px;
       }
       .single-speed-div-class {
-        height: 10vh;
+        height: 15vh;
         min-height: 50px;
         width: 100%;
         /* height: 128px; */
@@ -963,7 +967,7 @@
         ).offsetHeight;
         const containerHeight = container.offsetHeight;
 
-        const baseOffset = containerHeight - stepHeight * (3 / 2) + 4;
+        const baseOffset = containerHeight+stepHeight+4;
         const translateYValue =
           (baseOffset - velocityMagnitude * stepHeight) * -1;
 
@@ -978,7 +982,7 @@
       // Update the reset function
       function resetParticle() {
         particle.x = 600;
-        particle.y = 290;
+        particle.y = 280;
         particle.vx = 0;
         particle.vy = 0;
 
@@ -1201,7 +1205,7 @@
       //   updateVelocityHUD(currentVelocity);
       // });
 
-      ///For resizing and to scale velocity visualization
+      ///For resizing and to scale velocity
       document.addEventListener("DOMContentLoaded", () => {
         // Initial positioning
         updateVelocityHUD(0);
