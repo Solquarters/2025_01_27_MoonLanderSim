@@ -422,7 +422,10 @@ color: rgb(54, 54, 54);
           </span>
     
       
-   <!-- <span>ToDos...Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...</span>  -->
+   <!-- <span>ToDos...Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...
+
+    zeitlicher verlauf von geschwindigkeit als x y graph anzeigen... wie ginge das ? Wie eine Art Monitor im Krankenhaus
+   </span>  -->
       </div>
       
     </div>
@@ -679,6 +682,8 @@ color: rgb(54, 54, 54);
         particle.vx += force * Math.cos(angle);
         particle.vy += force * Math.sin(angle);
       }
+
+
       // Add new explosion function
       function explodeParticle(collisionSpeed, particlevx, particlevy) {
         particle.isActive = false;
@@ -776,7 +781,7 @@ color: rgb(54, 54, 54);
         }
       }
 
-      // Modify the update function to handle debris
+      
       function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
