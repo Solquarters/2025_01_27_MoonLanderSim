@@ -93,6 +93,10 @@ onclick="resetParticle()">
         <p id="missionTimerId"></p>
       </div>
 
+      <div class="performanceMainDivClass">
+        FPS: <span id="fpsCounterId"></span>
+    </div>
+
       <div class="trainingObjectivesMainDivClass">
         <span>
           Mission objectives: 
@@ -579,6 +583,8 @@ onclick="resetParticle()">
 
         reduceOxygenAmount(missionTimer.getTime());
 
+        fpsCounter.trackFrame();
+
         requestAnimationFrame(update);
       }
 
@@ -929,12 +935,60 @@ onclick="resetParticle()">
       //   updateVelocityHUD(currentVelocity);
       // });
 
+
+
+      ////////////Framerate Displaying START////////////
+      class FPSCounter {
+    constructor(displayElementId) {
+        this.displayElement = document.getElementById(displayElementId);
+        this.frames = [];
+        this.lastFrameTimeStamp = performance.now();
+    }
+
+    trackFrame() {
+        const now = performance.now();
+        const delta = now - this.lastFrameTimeStamp;
+        this.lastFrameTimeStamp = now;
+        const fps = 1 / (delta / 1000);
+
+        // Keep last 100 frame times
+        this.frames.push(fps);
+        if (this.frames.length > 100) {
+            this.frames.shift();
+        }
+
+        // Calculate averaged FPS
+        const avg = this.frames.reduce((total, fps) => total + fps) / this.frames.length;
+        
+        // Update display every 1 second
+        if (!this.lastUpdate || now - this.lastUpdate > 25) {
+            this.displayElement.textContent = Math.round(avg).toString().padStart(2, '0');
+            this.lastUpdate = now;
+        }
+    }
+}
+    ////////////Framerate Displaying END////////////
+
+
+
+
+
+
+
+
+
       ///For resizing and to scale velocity
       document.addEventListener("DOMContentLoaded", () => {
         // Initial positioning
         updateVelocityHUD(0);
         window.dispatchEvent(new Event("resize"));
+
+        
       });
+
+      ///Initializing FPS Displaying, needs to be initialized before update() function is called.
+      const fpsCounter = new FPSCounter("fpsCounterId");
+
 
       // Start the gravity simulation
       update();
