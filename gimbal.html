@@ -4,7 +4,7 @@
     <title>Apollo FDAI Visualization</title>
     <style>
         body { margin: 0; background: #1a1a1a; display: flex; flex-direction: column; align-items: center; color: white; font-family: monospace; }
-        #container { width: 600px; height: 600px; }
+        #container { width: 300px; height: 300px; border-radius: 50%; background-color: rgb(224, 224, 224); overflow: hidden; /* Add this line */ }
         .slider-container { margin: 20px; width: 600px; }
         input[type="range"] { width: 100%; }
         .slider-label { display: flex; justify-content: space-between; }
@@ -27,7 +27,7 @@
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(600, 600);
+        renderer.setSize(300, 300);
         renderer.setClearColor(0x333333);
         document.getElementById('container').appendChild(renderer.domElement);
 
@@ -154,7 +154,7 @@
         }
         animate();
         // Camera setup
-camera.position.set(0, 2, 5); // Center the camera on the sphere
+camera.position.set(0, 2, 4.1); // Center the camera on the sphere
 camera.lookAt(0, 0, 0); // Ensure it points at the sphere center
 
 
