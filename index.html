@@ -103,14 +103,14 @@ onclick="resetParticle()">
           <br>5. Perform a catapult maneuver, reach X speed + hit a corridor with X fuel.
           </span>
     
-<!--       
-   <span>ToDos...
-    Mondphasen, 
-    rotation der ausrichtung, 
-    Debug Raumschiff verschwindet im Mond bei max speed, 
-    responsiveness...
-    3D Button Effekt: https://www.youtube.com/watch?v=TGXRxYsfrZU
-  </span>  -->
+      
+   <!-- <span>ToDos...Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...</span>  -->
+     <!-- <span>ToDos...
+    Delta Time für gleiche Frame Rate auf allen systemen
+    Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...
+
+    zeitlicher verlauf von geschwindigkeit als x y graph anzeigen... wie ginge das ? Wie eine Art Monitor im Krankenhaus
+   </span>  -->
       </div>
       
     </div>
@@ -367,6 +367,8 @@ onclick="resetParticle()">
         particle.vx += force * Math.cos(angle);
         particle.vy += force * Math.sin(angle);
       }
+
+
       // Add new explosion function
       function explodeParticle(collisionSpeed, particlevx, particlevy) {
         particle.isActive = false;
@@ -464,7 +466,7 @@ onclick="resetParticle()">
         }
       }
 
-      // Modify the update function to handle debris
+      
       function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
