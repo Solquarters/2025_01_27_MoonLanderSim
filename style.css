@@ -1,0 +1,423 @@
+
+/* anta-regular - latin */
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "Anta";
+  font-style: normal;
+  font-weight: 400;
+  src: url("../fonts/anta-v1-latin-regular.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+@font-face {
+  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-family: "DSEG7Modern";
+  font-style: normal;
+  font-weight: 400;
+  src: url("../fonts/DSEG7Modern-BoldItalic.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* Remove any background-image to avoid extra overhead */
+body {
+  font-family: "Anta";
+  margin: 0;
+  padding: 0;
+  background: #000;
+  overflow: hidden; /* If you don't want scrollbars */
+}
+.canvas-container {
+  position: relative;
+  width: 1200px;
+  height: 800px;
+  margin: 10px auto; /* center container if you like */
+  border: 1px solid #ccc;
+}
+/* Stack canvases: starryBg at the bottom, flickerCanvas in the middle, gravityCanvas on top */
+#starryBg,
+#flickerCanvas,
+#gravityCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1200px;
+  height: 800px;
+  display: block;
+}
+/* Optional: ensure the top canvas is above the others */
+#gravityCanvas {
+  z-index: 2;
+}
+#flickerCanvas {
+  z-index: 1;
+}
+#starryBg {
+  z-index: 0;
+}
+
+#mainHUDId {
+  /* pointer-events: none; */
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  /* background-color: rgba(0, 255, 255, 0.308); */
+}
+
+#velocityMainDivId {
+  height: 50vh;
+  min-height: 300px;
+  position: absolute;
+  top: 25%;
+  left: 5%;
+  border: 2px solid rgba(255, 255, 255, 0.829);
+  border-radius: 4px;
+  width: 48px;
+  overflow: hidden;
+}
+#velocityStepsDivId {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+  position: relative;
+  transition: all 50ms ease-in-out;
+
+  bottom: 0;
+  transform: translateY(0);
+}
+.seperator {
+  width: 50%;
+  height: 2px;
+  background-color: white;
+  display: flex;
+}
+.seperator2 {
+  border: none;
+  width: 100%;
+  height: 2px;
+  background-color: rgba(255, 184, 0, 1);
+  display: flex;
+  justify-content: center;
+}
+.seperator3 {
+  border: none;
+  width: 100%;
+  background-color: rgb(255, 0, 0);
+  display: flex;
+  justify-content: center;
+}
+#velIndicatorId {
+  z-index: 9;
+  position: absolute;
+  top: calc(50% - 16px);
+  border-top: 2px solid white;
+  border-bottom: 2px solid white;
+  background-color: rgba(248, 255, 206, 0.384);
+  width: 100%;
+  height: 32px;
+}
+.single-speed-div-class {
+  height: 15vh;
+  min-height: 50px;
+  width: 100%;
+  /* height: 128px; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+.orange-gradient-class {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 184, 0, 1) 0%,
+    rgb(153, 92, 0) 50%,
+    rgb(0, 0, 0) 100%
+  );
+}
+.orange-red-gradient-class {
+  background: linear-gradient(
+    -180deg,
+    rgb(255, 0, 0) 0%,
+    rgba(255, 184, 0, 1) 100%
+  );
+}
+.red-class {
+  background-color: red;
+}
+.green-class {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 255, 0, 1) 100%,
+    rgba(0, 255, 0, 1) 100%
+  );
+}
+#collisionMainDivId {
+  position: absolute;
+  bottom: 2%;
+  left: calc(50% - 150px);
+  border: 4px solid rgba(255, 255, 255, 0.829);
+  border-radius: 4px;
+  height: 48px;
+  width: 300px;
+  overflow: hidden;
+  color: white;
+  font-size: 24px;
+  font-weight: 1000;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background-color: #000333;
+  animation: warningBlink 1s step-end infinite;
+}
+
+.signalParentWrapperDivClass {
+  position: absolute;
+  top: 3%;
+  left: calc(50% - 125px);
+  border: 4px solid rgba(255, 255, 255, 0.829);
+  border-radius: 4px;
+  height: 48px;
+  overflow: hidden;
+  color: white;
+  font-size: 24px;
+  font-weight: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000333;
+  
+}
+
+.collisionWrapperDiv {
+  width: calc(100%);
+  height: calc(100% - 10px);
+  margin: 4px;
+  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(
+    circle,
+    rgba(255, 162, 0, 1) 25%,
+    rgba(255, 0, 0, 1) 100%
+  );
+}
+.greenSignalWrapperDiv {
+  background: radial-gradient(rgba(9, 255, 0, 1), rgb(4, 107, 0));
+}
+
+#resetButtonMainDivId {
+  display: none;
+  text-align: center;
+}
+.resetButtonMainDiv {
+}
+
+.oxygenMainDivClass {
+  position: absolute;
+  top: calc(50% - 15%);
+  right: 5%;
+  border: 2px solid rgba(255, 255, 255, 0.829);
+  border-radius: 4px;
+  height: 30%;
+  width: 24px;
+  overflow: hidden;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.fuelMainDivClass {
+  position: absolute;
+  top: calc(50% - 15%);
+  right: 2.5%;
+  border: 2px solid rgba(255, 255, 255, 0.829);
+  border-radius: 4px;
+  height: 30%;
+  width: 24px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.fuelAmountDivClass {
+  background: radial-gradient(rgb(255, 255, 255), rgb(0, 0, 0));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: white;
+  border-top: 1px solid rgb(65, 65, 65);
+}
+.oxygenAmountDivClass {
+  /* background: linear-gradient(to bottom, rgb(9, 255, 0, 1) 40%, rgb(255, 0, 0)); */
+  background: radial-gradient(rgb(0, 217, 255), rgb(0, 49, 53));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: white;
+}
+#oxygenAmountDivId {
+  height: 80%;
+  border-top: 1px solid rgb(0, 78, 72);
+  transition: height 200ms ease-in-out;
+}
+#fuelAmountDivId {
+  height: 80%;
+  transition: height 200ms ease-in-out;
+}
+
+.missionTimerMainDivClass {
+  color: rgb(81, 255, 0);
+}
+#missionTimerId {
+  font-family: "DSEG7Modern";
+}
+
+#velocityInfoId {
+  color: rgb(81, 255, 0);
+  font-family: "DSEG7Modern";
+}
+.velocityrMainDivClass {
+  color: rgb(81, 255, 0);
+}
+
+.guidanceComputerInterfaceMainDivClass {
+  padding: 8px 16px;
+  display: flex;
+  gap: 32px;
+}
+.trainingObjectivesMainDivClass{
+display: flex;
+color: rgb(54, 54, 54);
+}
+
+
+
+
+/* ANALOG BUTTON START */
+.button-14 {
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+    border-width: 0;
+    padding: 0 8px 12px;
+    min-width: 10em;
+    box-sizing: border-box;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+    
+  }
+  
+  .button-14-top {
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 0;
+    padding: 8px 16px;
+    transform: translateY(0);
+    text-align: center;
+    color: #fff;
+    text-shadow: 0.5px 1.5px rgba(0, 0, 0, 0.575);
+    transition-property: transform;
+    transition-duration: 80ms;
+    -webkit-user-select: none;
+    user-select: none;
+    animation: smoothPulse 2s ease-out infinite;
+  }
+  
+  .button-14:active .button-14-top {
+    transform: translateY(6px);
+  
+   
+  }
+  
+  .button-14-top::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    border-radius: 4px;
+    width: 100%;
+    height: 100%;
+    box-sizing: content-box;
+    background-image: radial-gradient(#ff0000, #8f0000);
+    text-align: center;
+    color: #fff;
+    box-shadow: inset 0 0 0px 1px rgba(255, 255, 255, .3), 0 1px 2px 1px rgba(255, 255, 255, .2);
+    transition-property: border-radius, padding, width, transform;
+    transition-duration: 80ms;
+  }
+  
+  .button-14:active .button-14-top::after {
+    padding: 0px 0px 0px 1px;
+  }
+  
+  .button-14-bottom {
+    animation: smoothPulse 2s ease-out infinite;
+    position: absolute;
+    z-index: -1;
+    bottom: 4px;
+    left: 6px;
+    border-radius: 8px / 10px 10px 8px 8px;
+    padding-top: 6px;
+    width: calc(100% - 12px);
+    height: calc(100% - 10px);
+    box-sizing: content-box;
+    background-color: rgb(172, 0, 0);
+    background-image: radial-gradient(4px 8px at 4px calc(100% - 8px), rgba(255, 255, 255, 0.651), transparent), radial-gradient(4px 8px at calc(100% - 4px) calc(100% - 8px), rgba(255, 255, 255, 0.479), transparent), radial-gradient(16px at -4px 0, white, transparent), radial-gradient(16px at calc(100% + 4px) 0, white, transparent);
+    box-shadow: 0px 2px 3px 0px rgba(51, 51, 51, 0.5), inset 0 -1px 3px 3px rgba(0, 0, 0, .4);
+    transition-property: border-radius, padding-top;
+    transition-duration: 80ms;
+  }
+  
+  .button-14:active .button-14-bottom {
+    border-radius: 10px 10px 8px 8px / 8px;
+    padding-top: 0;
+  }
+  
+  .button-14-base {
+    position: absolute;
+    z-index: -2;
+    top: 5px;
+    left: 0;
+    border-radius: 10px;
+    width: 99%;
+    height: calc(100% - 4px);
+    background-color: rgb(19, 19, 19);
+    /* box-shadow: 0 1px 1px 0 rgba(255, 255, 255, .75), inset 0 2px 2px rgba(0, 0, 0, .25); */
+  }
+/* ANALOG BUTTON END */
+  
+
+
+
+
+@keyframes warningBlink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes smoothPulse {
+  0% {
+    opacity: 1;
+    background-color: #ff0000b7;
+  }
+  50% {
+    opacity: 0.2;
+    background-color: #300000;
+  }
+  100% {
+    opacity: 1;
+    background-color: #ff0000;
+  }
+}

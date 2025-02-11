@@ -4,333 +4,8 @@
     <meta charset="UTF-8">
     <title>Moon Lander</title>
     <link rel="icon" type="image/x-icon" href="./img/icons8-lander-topaz-16.png">
-
-    <style>
-      /* anta-regular - latin */
-      @font-face {
-        font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-        font-family: "Anta";
-        font-style: normal;
-        font-weight: 400;
-        src: url("../fonts/anta-v1-latin-regular.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-      }
-
-      @font-face {
-        font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
-        font-family: "DSEG7Modern";
-        font-style: normal;
-        font-weight: 400;
-        src: url("../fonts/DSEG7Modern-BoldItalic.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
-      }
-      /* Remove any background-image to avoid extra overhead */
-      body {
-        font-family: "Anta";
-        margin: 0;
-        padding: 0;
-        background: #000;
-        overflow: hidden; /* If you don't want scrollbars */
-      }
-      .canvas-container {
-        position: relative;
-        width: 1200px;
-        height: 800px;
-        margin: 10px auto; /* center container if you like */
-        border: 1px solid #ccc;
-      }
-      /* Stack canvases: starryBg at the bottom, flickerCanvas in the middle, gravityCanvas on top */
-      #starryBg,
-      #flickerCanvas,
-      #gravityCanvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 1200px;
-        height: 800px;
-        display: block;
-      }
-      /* Optional: ensure the top canvas is above the others */
-      #gravityCanvas {
-        z-index: 2;
-      }
-      #flickerCanvas {
-        z-index: 1;
-      }
-      #starryBg {
-        z-index: 0;
-      }
-
-      #mainHUDId {
-        /* pointer-events: none; */
-        position: absolute;
-        z-index: 10;
-        width: 100%;
-        height: 100%;
-        /* background-color: rgba(0, 255, 255, 0.308); */
-      }
-
-      #velocityMainDivId {
-        height: 50vh;
-        min-height: 300px;
-        position: absolute;
-        top: 25%;
-        left: 5%;
-        border: 2px solid rgba(255, 255, 255, 0.829);
-        border-radius: 4px;
-        width: 48px;
-        overflow: hidden;
-      }
-      #velocityStepsDivId {
-        position: absolute;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        color: white;
-        position: relative;
-        transition: all 50ms ease-in-out;
-
-        bottom: 0;
-        transform: translateY(0);
-      }
-      .seperator {
-        width: 50%;
-        height: 2px;
-        background-color: white;
-        display: flex;
-      }
-      .seperator2 {
-        border: none;
-        width: 100%;
-        height: 2px;
-        background-color: rgba(255, 184, 0, 1);
-        display: flex;
-        justify-content: center;
-      }
-      .seperator3 {
-        border: none;
-        width: 100%;
-        background-color: rgb(255, 0, 0);
-        display: flex;
-        justify-content: center;
-      }
-      #velIndicatorId {
-        z-index: 9;
-        position: absolute;
-        top: calc(50% - 16px);
-        border-top: 2px solid white;
-        border-bottom: 2px solid white;
-        background-color: rgba(248, 255, 206, 0.384);
-        width: 100%;
-        height: 32px;
-      }
-      .single-speed-div-class {
-        height: 15vh;
-        min-height: 50px;
-        width: 100%;
-        /* height: 128px; */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 800;
-      }
-      .orange-gradient-class {
-        background: linear-gradient(
-          180deg,
-          rgba(255, 184, 0, 1) 0%,
-          rgb(153, 92, 0) 50%,
-          rgb(0, 0, 0) 100%
-        );
-      }
-      .orange-red-gradient-class {
-        background: linear-gradient(
-          -180deg,
-          rgb(255, 0, 0) 0%,
-          rgba(255, 184, 0, 1) 100%
-        );
-      }
-      .red-class {
-        background-color: red;
-      }
-      .green-class {
-        background: linear-gradient(
-          180deg,
-          rgba(0, 0, 0, 1) 0%,
-          rgba(0, 255, 0, 1) 100%,
-          rgba(0, 255, 0, 1) 100%
-        );
-      }
-      #collisionMainDivId {
-        position: absolute;
-        bottom: 2%;
-        left: calc(50% - 150px);
-        border: 4px solid rgba(255, 255, 255, 0.829);
-        border-radius: 4px;
-        height: 48px;
-        width: 300px;
-        overflow: hidden;
-        color: white;
-        font-size: 24px;
-        font-weight: 1000;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        background-color: #000333;
-        animation: warningBlink 1s step-end infinite;
-      }
-
-      .signalParentWrapperDivClass {
-        position: absolute;
-        top: 2%;
-        left: calc(50% - 164px);
-        border: 4px solid rgba(255, 255, 255, 0.829);
-        border-radius: 4px;
-        height: 48px;
-        overflow: hidden;
-        color: white;
-        font-size: 24px;
-        font-weight: 1000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: #000333;
-        animation: smoothPulse 2s ease-out infinite;
-      }
-
-      .collisionWrapperDiv {
-        width: calc(100%);
-        height: calc(100% - 10px);
-        margin: 4px;
-        border-radius: 2px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: radial-gradient(
-          circle,
-          rgba(255, 162, 0, 1) 25%,
-          rgba(255, 0, 0, 1) 100%
-        );
-      }
-      .greenSignalWrapperDiv {
-        cursor: pointer;
-        width: calc(100%);
-        height: calc(100% - 10px);
-        margin: 4px;
-        padding: 0px 8px;
-        border-radius: 2px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: radial-gradient(rgba(9, 255, 0, 1), rgb(4, 107, 0));
-      }
-
-      #resetButtonMainDivId {
-        display: none;
-        text-align: center;
-      }
-      .resetButtonMainDiv {
-      }
-
-      .oxygenMainDivClass {
-        position: absolute;
-        top: calc(50% - 15%);
-        right: 5%;
-        border: 2px solid rgba(255, 255, 255, 0.829);
-        border-radius: 4px;
-        height: 30%;
-        width: 24px;
-        overflow: hidden;
-
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-      }
-
-      .fuelMainDivClass {
-        position: absolute;
-        top: calc(50% - 15%);
-        right: 2.5%;
-        border: 2px solid rgba(255, 255, 255, 0.829);
-        border-radius: 4px;
-        height: 30%;
-        width: 24px;
-        overflow: hidden;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-      }
-      .fuelAmountDivClass {
-        background: radial-gradient(rgb(255, 255, 255), rgb(0, 0, 0));
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        color: white;
-        border-top: 1px solid rgb(65, 65, 65);
-      }
-      .oxygenAmountDivClass {
-        /* background: linear-gradient(to bottom, rgb(9, 255, 0, 1) 40%, rgb(255, 0, 0)); */
-        background: radial-gradient(rgb(0, 217, 255), rgb(0, 49, 53));
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        color: white;
-      }
-      #oxygenAmountDivId {
-        height: 80%;
-        border-top: 1px solid rgb(0, 78, 72);
-        transition: height 200ms ease-in-out;
-      }
-      #fuelAmountDivId {
-        height: 80%;
-        transition: height 200ms ease-in-out;
-      }
-
-      .missionTimerMainDivClass {
-        color: rgb(81, 255, 0);
-      }
-      #missionTimerId {
-        font-family: "DSEG7Modern";
-      }
-
-      #velocityInfoId {
-        color: rgb(81, 255, 0);
-        font-family: "DSEG7Modern";
-      }
-      .velocityrMainDivClass {
-        color: rgb(81, 255, 0);
-      }
-
-      .guidanceComputerInterfaceMainDivClass {
-        padding: 8px 16px;
-        display: flex;
-        gap: 32px;
-      }
-      .trainingObjectivesMainDivClass{
-display: flex;
-color: rgb(54, 54, 54);
-      }
-
-      @keyframes warningBlink {
-        0% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.1;
-        }
-        100% {
-          opacity: 1;
-        }
-      }
-      @keyframes smoothPulse {
-        0% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.1;
-        }
-        100% {
-          opacity: 1;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="style.css">
+   
   </head>
   <body>
     <div id="mainHUDId" onclick="">
@@ -345,15 +20,22 @@ color: rgb(54, 54, 54);
         </div>
       </div>
 
-      <div
-        class="resetButtonMainDiv"
-        id="resetButtonMainDivId"
-        onclick="resetParticle()"
+      <!-- <div class="resetButtonMainDiv"
+        
       >
         <div class="signalParentWrapperDivClass">
           <div class="greenSignalWrapperDiv">[SPACE] to resume training</div>
         </div>
-      </div>
+      </div> -->
+
+<!-- /////////////// -->
+<button class="button-14 signalParentWrapperDivClass greenSignalWrapperDiv " role="button" id="resetButtonMainDivId"
+onclick="resetParticle()">
+  <div class="button-14-top text">[SPACE] to resume training</div>
+  <div class="button-14-bottom"></div>
+  <div class="button-14-base"></div>
+</button>
+<!-- /////////////// -->
 
       <div class="" id="collisionMainDivId">
         <div class="collisionWrapperDiv">ON COLLISION COURSE</div>
@@ -421,8 +103,14 @@ color: rgb(54, 54, 54);
           <br>5. Perform a catapult maneuver, reach X speed + hit a corridor with X fuel.
           </span>
     
-      
-   <!-- <span>ToDos...Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...</span>  -->
+<!--       
+   <span>ToDos...
+    Mondphasen, 
+    rotation der ausrichtung, 
+    Debug Raumschiff verschwindet im Mond bei max speed, 
+    responsiveness...
+    3D Button Effekt: https://www.youtube.com/watch?v=TGXRxYsfrZU
+  </span>  -->
       </div>
       
     </div>
@@ -990,7 +678,8 @@ color: rgb(54, 54, 54);
       // Reset particle
       // Update the reset function
       function resetParticle() {
-        particle.x = 100;
+        setTimeout(() => {
+          particle.x = 100;
         particle.y = 100;
         particle.vx = 0;
         particle.vy = 0;
@@ -1003,9 +692,10 @@ color: rgb(54, 54, 54);
         futurePath = calculateFuturePath();
 
         // Reset oxygen level
-        let oxygenContainer = document.getElementById("oxygenAmountDivId");
-        oxygenContainer.style.height = "80%";
-        lastOxygenUpdate = 0;
+        // let oxygenContainer = document.getElementById("oxygenAmountDivId");
+        // oxygenContainer.style.height = "80%";
+        // lastOxygenUpdate = 0;
+        setOxygenLevel(80);
 
         //Reset fuelLevel
         setFuelLevel(80);
@@ -1017,6 +707,15 @@ color: rgb(54, 54, 54);
         }
 
         hideDisplayButton();
+        }, 300);
+       
+      }
+
+
+      function setOxygenLevel(amount){
+        let oxygenContainer = document.getElementById("oxygenAmountDivId");
+        oxygenContainer.style.height = `${amount}%`;
+        lastOxygenUpdate = 0;
       }
 
       /****************************************************
