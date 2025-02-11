@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Controlled Sphere Rotation</title>
+    <title>Geometric Sphere Gimbal</title>
     <style>
         canvas {
             background: #000;
-            cursor: grab;
-        }
-        canvas:active {
-            cursor: grabbing;
+            cursor: move;
         }
         .instructions {
             position: fixed;
@@ -20,7 +17,7 @@
     </style>
 </head>
 <body>
-    <div class="instructions">Click and drag to rotate</div>
+    <div class="instructions">Drag to rotate the gimbal sphere</div>
     <canvas id="sphereCanvas"></canvas>
 
 <script>
@@ -31,45 +28,90 @@ const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// Sphere properties
+// Configuration
 const config = {
-    radius: 100,
-    pointSize: 2,  // Smaller dots
-    pointCount: 800,
-    lightDirection: [0.5, 0.5, 1],
-    rotationSpeed: 0.5
+    radius: 120,
+    pointSize: 0.4,
+    longitudeLines: 12,  // Number of longitudinal lines
+    latitudeLines: 12,    // Number of latitudinal lines
+    rotationSpeed: 0.5,
+    showAxes: true
 };
 
-// Generate sphere points
-const points = Array.from({ length: config.pointCount }, () => {
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos((Math.random() * 2) - 1);
+// Generate structured grid points
+const points = [];
+const rings = [];
+
+// Create longitude lines (meridians)
+for(let lon = 0; lon < config.longitudeLines; lon++) {
+    const lonAngle = (lon / config.longitudeLines) * Math.PI * 2;
+    const linePoints = [];
     
-    return {
-        x: config.radius * Math.sin(phi) * Math.cos(theta),
-        y: config.radius * Math.sin(phi) * Math.sin(theta),
-        z: config.radius * Math.cos(phi)
-    };
-});
+    for(let latStep = 0; latStep <= 20; latStep++) {
+        const lat = -Math.PI/2 + (latStep/20) * Math.PI;
+        const x = config.radius * Math.cos(lat) * Math.cos(lonAngle);
+        const y = config.radius * Math.cos(lat) * Math.sin(lonAngle);
+        const z = config.radius * Math.sin(lat);
+        linePoints.push({x, y, z});
+    }
+    points.push(...linePoints);
+    rings.push(linePoints);
+}
+
+// Create latitude lines (parallels)
+for(let lat = 1; lat < config.latitudeLines; lat++) {
+    const latAngle = -Math.PI/2 + (lat/config.latitudeLines) * Math.PI;
+    const linePoints = [];
+    const scale = Math.cos(latAngle);
+    
+    for(let lonStep = 0; lonStep <= 40; lonStep++) {
+        const lon = (lonStep/40) * Math.PI * 2;
+        const x = config.radius * Math.cos(latAngle) * Math.cos(lon);
+        const y = config.radius * Math.cos(latAngle) * Math.sin(lon);
+        const z = config.radius * Math.sin(latAngle);
+        linePoints.push({x, y, z});
+    }
+    points.push(...linePoints);
+    rings.push(linePoints);
+}
+
+// Add orthogonal rings (gimbal axes)
+const addOrthoRing = (axis) => {
+    const ring = [];
+    for(let t = 0; t <= 100; t++) {
+        const angle = (t/100) * Math.PI * 2;
+        const x = axis === 'x' ? 0 : config.radius * Math.cos(angle);
+        const y = axis === 'y' ? 0 : config.radius * Math.sin(angle);
+        const z = axis === 'z' ? 0 : config.radius * Math.sin(angle);
+        ring.push(axis === 'x' ? {x: 0, y, z} :
+                   axis === 'y' ? {x, y: 0, z} : 
+                                  {x, y, z: 0});
+    }
+    rings.push(ring);
+};
+
+if(config.showAxes) {
+    addOrthoRing('x');
+    addOrthoRing('y');
+    addOrthoRing('z');
+}
 
 // Rotation state
 let isDragging = false;
 let startX = 0;
 let startY = 0;
-let currentRotationX = 0;
-let currentRotationZ = 0;
+let rotX = 0;
+let rotY = 0;
 
 // Rotation functions
-function rotateX(point, angle) {
-    const y = point.y * Math.cos(angle) - point.z * Math.sin(angle);
-    const z = point.y * Math.sin(angle) + point.z * Math.cos(angle);
-    return { ...point, y, z };
-}
-
-function rotateZ(point, angle) {
-    const x = point.x * Math.cos(angle) - point.y * Math.sin(angle);
-    const y = point.x * Math.sin(angle) + point.y * Math.cos(angle);
-    return { ...point, x, y };
+function rotate(point, rx, ry) {
+    // X-axis rotation
+    let y = point.y * Math.cos(rx) - point.z * Math.sin(rx);
+    let z = point.y * Math.sin(rx) + point.z * Math.cos(rx);
+    // Y-axis rotation
+    let x = point.x * Math.cos(ry) + z * Math.sin(ry);
+    z = -point.x * Math.sin(ry) + z * Math.cos(ry);
+    return {x, y, z};
 }
 
 function project(point) {
@@ -82,74 +124,81 @@ function project(point) {
     };
 }
 
-// Mouse/touch handlers
-function handleStart(e) {
-    isDragging = true;
-    startX = e.clientX || e.touches[0].clientX;
-    startY = e.clientY || e.touches[0].clientY;
-}
-
-function handleMove(e) {
-    if (!isDragging) return;
-    
-    const currentX = e.clientX || e.touches[0].clientX;
-    const currentY = e.clientY || e.touches[0].clientY;
-    
-    const deltaX = currentX - startX;
-    const deltaY = currentY - startY;
-    
-    currentRotationZ = deltaX * config.rotationSpeed * (Math.PI / 180);
-    currentRotationX = deltaY * config.rotationSpeed * (Math.PI / 180);
-    
-    drawFrame();
-}
-
-function handleEnd() {
-    isDragging = false;
-}
-
 // Drawing function
-function drawFrame() {
-    ctx.fillStyle = 'black';
+function draw() {
+    ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    points.forEach(point => {
-        let rotated = rotateZ(point, currentRotationZ);
-        rotated = rotateX(rotated, currentRotationX);
+
+    // Draw grid lines
+    rings.forEach((ring, i) => {
+        ctx.beginPath();
+        const color = i < config.longitudeLines + config.latitudeLines ? 
+                     '#444' : 
+                     i === rings.length-3 ? '#ff5555' : 
+                     i === rings.length-2 ? '#55ff55' : '#5555ff';
         
+        ring.forEach((p, j) => {
+            const rotated = rotate(p, rotX, rotY);
+            const projected = project(rotated);
+            
+            if(j === 0) {
+                ctx.moveTo(projected.x, projected.y);
+            } else {
+                ctx.lineTo(projected.x, projected.y);
+            }
+        });
+        
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    });
+
+    // Draw points
+    points.forEach(p => {
+        const rotated = rotate(p, rotX, rotY);
         const projected = project(rotated);
         
-        const light = Math.max(0, 
-            (rotated.x * config.lightDirection[0] +
-             rotated.y * config.lightDirection[1] +
-             rotated.z * config.lightDirection[2]) / config.radius
-        );
-        
         ctx.beginPath();
-        ctx.fillStyle = `hsl(200, 100%, ${light * 70}%)`;
+        ctx.fillStyle = '#fff';
         ctx.arc(projected.x, projected.y, config.pointSize, 0, Math.PI * 2);
         ctx.fill();
     });
 }
 
-// Event listeners
-canvas.addEventListener('mousedown', handleStart);
-canvas.addEventListener('mousemove', handleMove);
-canvas.addEventListener('mouseup', handleEnd);
-canvas.addEventListener('mouseleave', handleEnd);
+// Event handlers
+canvas.addEventListener('mousedown', e => {
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+});
 
-canvas.addEventListener('touchstart', handleStart);
-canvas.addEventListener('touchmove', handleMove);
-canvas.addEventListener('touchend', handleEnd);
+canvas.addEventListener('mousemove', e => {
+    if(!isDragging) return;
+    
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    
+    rotY += dx * 0.005;
+    rotX += dy * 0.005;
+    
+    startX = e.clientX;
+    startY = e.clientY;
+    
+    draw();
+});
+
+canvas.addEventListener('mouseup', () => isDragging = false);
+canvas.addEventListener('mouseleave', () => isDragging = false);
+
+// Initial draw
+draw();
 
 // Resize handler
 window.addEventListener('resize', () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    draw();
 });
-
-// Initial draw
-drawFrame();
 </script>
 </body>
 </html>
