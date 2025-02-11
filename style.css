@@ -355,15 +355,24 @@ color: rgb(54, 54, 54);
   .button-14:active .button-14-top::after {
     padding: 0px 0px 0px 1px;
   }
+
+  /* to mimic :active state for spacebar */
+.button-14.space-active .button-14-top {
+    transform: translateY(6px);
+  }
+  
+  .button-14.space-active .button-14-top::after {
+    padding: 0px 0px 0px 1px;
+  }
   
   .button-14-bottom {
-    animation: smoothPulse 2s ease-out infinite;
+    animation: smoothPulse2 2s ease-out infinite;
     position: absolute;
     z-index: -1;
     bottom: 4px;
     left: 6px;
     border-radius: 8px / 10px 10px 8px 8px;
-    padding-top: 6px;
+    padding-top: 0px;
     width: calc(100% - 12px);
     height: calc(100% - 10px);
     box-sizing: content-box;
@@ -388,8 +397,10 @@ color: rgb(54, 54, 54);
     width: 99%;
     height: calc(100% - 4px);
     background-color: rgb(19, 19, 19);
-    /* box-shadow: 0 1px 1px 0 rgba(255, 255, 255, .75), inset 0 2px 2px rgba(0, 0, 0, .25); */
+    box-shadow: 0 1px 1px 0 rgba(255, 255, 255, .75), inset 0 2px 2px rgba(0, 0, 0, .25);
   }
+
+
 /* ANALOG BUTTON END */
   
 
@@ -413,11 +424,27 @@ color: rgb(54, 54, 54);
     background-color: #ff0000b7;
   }
   50% {
-    opacity: 0.2;
-    background-color: #300000;
+    opacity: 0.4;
+    background-color: #160000;
   }
   100% {
     opacity: 1;
     background-color: #ff0000;
   }
 }
+@keyframes smoothPulse2 {
+    0% {
+      opacity: 1;
+      background-color: rgb(172, 0, 0);
+    }
+    50% {
+    
+        opacity: 0.4;
+        background-color: #160000;
+    }
+    100% {
+      opacity: 1;
+      background-color: rgb(172, 0, 0);
+    }
+  }
+  

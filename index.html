@@ -29,7 +29,7 @@
       </div> -->
 
 <!-- /////////////// -->
-<button class="button-14 signalParentWrapperDivClass greenSignalWrapperDiv " role="button" id="resetButtonMainDivId"
+<button class="button-14 signalParentWrapperDivClass" role="button" id="resetButtonMainDivId"
 onclick="resetParticle()">
   <div class="button-14-top text">[SPACE] to resume training</div>
   <div class="button-14-bottom"></div>
@@ -255,11 +255,19 @@ onclick="resetParticle()">
         if (e.key in keysPressed) {
           keysPressed[e.key] = true;
         }
+
+        if (e.code === "Space") {
+    e.preventDefault(); // Prevent default scrolling behavior
+    const button = document.getElementById("resetButtonMainDivId");
+    button.classList.add('space-active'); // Add active style
+    
+  }
       });
       document.addEventListener("keyup", (e) => {
         if (e.key in keysPressed) {
           keysPressed[e.key] = false;
         }
+
         if (
           !keysPressed.ArrowLeft &&
           !keysPressed.ArrowRight &&
@@ -269,9 +277,15 @@ onclick="resetParticle()">
           // Once thrust is truly finished, recalc the future path:
           futurePath = calculateFuturePath();
         }
-        if (event.code === "Space") {
-          resetParticle();
-        }
+        // if (event.code === "Space") {
+        //   resetParticle();
+        // }
+        if (e.code === "Space") {
+    const button = document.getElementById("resetButtonMainDivId");
+    button.classList.remove('space-active'); // Remove active style
+    button.click(); // Trigger click handler
+  }
+        
       });
 
       // Center mass and particle
@@ -579,7 +593,7 @@ onclick="resetParticle()">
         // Split the number into whole and decimal parts
         let wholePart = Math.floor(velocityMagnitude);
         let decimalPart = (velocityMagnitude - wholePart)
-          .toFixed(2)
+        .toFixed(2)
           .substring(2);
 
         // Combine with dot separator
