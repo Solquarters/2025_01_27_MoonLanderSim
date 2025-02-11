@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Apollo FDAI Visualization</title>
+    <style>
+        body { margin: 0; background: #1a1a1a; display: flex; flex-direction: column; align-items: center; color: white; font-family: monospace; }
+        #container { width: 600px; height: 600px; }
+        .slider-container { margin: 20px; width: 600px; }
+        input[type="range"] { width: 100%; }
+        .slider-label { display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div class="slider-container">
+        <div class="slider-label"><span>Pitch (X): <output id="xValue">0</output>°</span></div>
+        <input type="range" id="xAxis" min="-180" max="180" value="0" step="1">
+        <div class="slider-label"><span>Yaw (Y): <output id="yValue">0</output>°</span></div>
+        <input type="range" id="yAxis" min="-180" max="180" value="0" step="1">
+        <div class="slider-label"><span>Roll (Z): <output id="zValue">0</output>°</span></div>
+        <input type="range" id="zAxis" min="-180" max="180" value="0" step="1">
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(600, 600);
+        renderer.setClearColor(0x333333);
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        // Main sphere (spacecraft)
+        const sphereGroup = new THREE.Group();
+        scene.add(sphereGroup);
+
+        // Sphere body
+        const sphereGeometry = new THREE.SphereGeometry(2, 64, 64);
+        const sphereMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            shininess: 100,
+            specular: 0x222222,
+        });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphereGroup.add(sphere);
+
+        // Add longitude/latitude lines (fixed to sphere)
+        function createDegreelines() {
+            const linesMaterial = new THREE.LineBasicMaterial({ color: 0x555555 });
+            
+            // Longitude lines (every 30 degrees)
+            for(let i = 0; i < 12; i++) {
+                const geometry = new THREE.BufferGeometry();
+                const points = [];
+                for(let j = 0; j <= 64; j++) {
+                    const theta = (j * Math.PI) / 32;
+                    const phi = (i * Math.PI) / 6;
+                    points.push(new THREE.Vector3(
+                        2.05 * Math.sin(theta) * Math.cos(phi),
+                        2.05 * Math.cos(theta),
+                        2.05 * Math.sin(theta) * Math.sin(phi)
+                    ));
+                }
+                geometry.setFromPoints(points);
+                sphereGroup.add(new THREE.Line(geometry, linesMaterial));
+            }
+
+            // Latitude lines (every 30 degrees)
+            for(let i = -5; i <= 5; i++) {
+                const geometry = new THREE.BufferGeometry();
+                const points = [];
+                for(let j = 0; j <= 64; j++) {
+                    const theta = (i * Math.PI) / 6;
+                    const phi = (j * Math.PI) / 32;
+                    points.push(new THREE.Vector3(
+                        2.05 * Math.cos(theta) * Math.cos(phi),
+                        2.05 * Math.sin(theta),
+                        2.05 * Math.cos(theta) * Math.sin(phi)
+                    ));
+                }
+                geometry.setFromPoints(points);
+                sphereGroup.add(new THREE.Line(geometry, linesMaterial));
+            }
+        }
+        createDegreelines();
+
+        // Fixed reference markers (world space)
+        function createReferenceMarkers() {
+            const redMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 });
+            
+            // XZ-plane circle
+            const circleGeometry = new THREE.CircleGeometry(2.1, 64);
+            const circle = new THREE.LineLoop(circleGeometry, redMaterial);
+            circle.rotation.x = Math.PI/2;
+            scene.add(circle);
+
+            // Crosshair (XY-plane)
+            const crosshairGeometry = new THREE.BufferGeometry();
+            const crosshairPoints = [
+                new THREE.Vector3(-2.1, 0, 0),
+                new THREE.Vector3(2.1, 0, 0),
+                new THREE.Vector3(0, -2.1, 0),
+                new THREE.Vector3(0, 2.1, 0)
+            ];
+            crosshairGeometry.setFromPoints(crosshairPoints);
+            const crosshair = new THREE.LineSegments(crosshairGeometry, redMaterial);
+            scene.add(crosshair);
+        }
+        createReferenceMarkers();
+
+        // Camera setup
+        camera.position.z = 6;
+        camera.position.y = 1.5;
+
+        // Controls
+        const sliders = {
+            x: document.getElementById('xAxis'),
+            y: document.getElementById('yAxis'),
+            z: document.getElementById('zAxis')
+        };
+        
+        const outputs = {
+            x: document.getElementById('xValue'),
+            y: document.getElementById('yValue'),
+            z: document.getElementById('zValue')
+        };
+
+        function updateRotation() {
+            // Use proper rotation order: ZYX (Apollo convention)
+            sphereGroup.rotation.z = THREE.MathUtils.degToRad(sliders.z.value);
+            sphereGroup.rotation.y = THREE.MathUtils.degToRad(sliders.y.value);
+            sphereGroup.rotation.x = THREE.MathUtils.degToRad(sliders.x.value);
+            
+            outputs.x.textContent = sliders.x.value;
+            outputs.y.textContent = sliders.y.value;
+            outputs.z.textContent = sliders.z.value;
+        }
+
+        Object.values(sliders).forEach(slider => 
+            slider.addEventListener('input', updateRotation));
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>

@@ -79,6 +79,48 @@ onclick="resetParticle()">
           <div class="seperator"></div>
         </div>
       </div>
+
+
+<!--       
+      <div class="trainingObjectivesMainDivClass" id="squareborderWrapper">
+        <span>
+ 
+          <br>
+          <br>1. Land at X before Oxygen or fuel runs out.
+          <br>2. Orbit once and fly to corridor.
+          <br>3. Land and take off and land again at X positions.
+          <br>4. Orbit at lowest possible altitude in X time
+          <br>5. Perform a catapult maneuver, reach X speed + hit a corridor with X fuel.
+          </span>
+     -->
+      
+   <!-- <span>ToDos...Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...</span>  -->
+     <!-- <span>ToDos...
+    Delta Time für gleiche Frame Rate auf allen systemen
+    Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...
+
+    zeitlicher verlauf von geschwindigkeit als x y graph anzeigen... wie ginge das ? Wie eine Art Monitor im Krankenhaus
+   </span>  -->
+      <!-- </div> -->
+
+
+
+
+      <div class="trainingObjectivesMainDivClass" id="squareborderWrapper">
+        <span>
+            <div>1. Land at X before Oxygen or fuel runs out.</div>
+            <div>2. Orbit once and fly to corridor.</div>
+            <div>3. Land and take off and land again at X positions.</div>
+            <div>4. Orbit at lowest possible altitude in X time</div>
+            <div>5. Perform a catapult maneuver, reach X speed + hit a corridor with X fuel.</div>
+        </span>
+    </div>
+
+
+
+
+      
+
     </div>
     <div class="guidanceComputerInterfaceMainDivClass">
       <!-- <button onclick="resetParticle()" style="margin: 10px;">Reset</button> -->
@@ -97,25 +139,6 @@ onclick="resetParticle()">
         FPS: <span id="fpsCounterId"></span>
     </div>
 
-      <div class="trainingObjectivesMainDivClass">
-        <span>
-          Mission objectives: 
-          <br>1. Land at X before Oxygen or fuel runs out.
-          <br>2. Orbit once and fly to corridor.
-          <br>3. Land and take off and land again at X positions.
-          <br>4. Orbit at lowest possible altitude in X time
-          <br>5. Perform a catapult maneuver, reach X speed + hit a corridor with X fuel.
-          </span>
-    
-      
-   <!-- <span>ToDos...Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...</span>  -->
-     <!-- <span>ToDos...
-    Delta Time für gleiche Frame Rate auf allen systemen
-    Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...
-
-    zeitlicher verlauf von geschwindigkeit als x y graph anzeigen... wie ginge das ? Wie eine Art Monitor im Krankenhaus
-   </span>  -->
-      </div>
       
     </div>
 
@@ -246,6 +269,10 @@ onclick="resetParticle()">
         }
       }
 
+
+
+// Key and CONTAINER EVENT LISTENERS START
+
       // Track which keys are currently pressed
       const keysPressed = {
         ArrowLeft: false,
@@ -291,6 +318,13 @@ onclick="resetParticle()">
   }
         
       });
+
+      ///Mission ibjectives click container
+      document.getElementById('squareborderWrapper').addEventListener('click', function() {
+    this.classList.toggle('active');
+});
+// Key and CONTAINER EVENT LISTENERS END
+
 
       // Center mass and particle
       const centerMass = {
