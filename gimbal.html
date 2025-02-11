@@ -25,7 +25,7 @@
     <script>
         // Scene setup
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+        const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(600, 600);
         renderer.setClearColor(0x333333);
@@ -117,8 +117,8 @@
         createReferenceMarkers();
 
         // Camera setup
-        camera.position.z = 6;
-        camera.position.y = 1.5;
+        camera.position.z = 5;
+        camera.position.y = 2;
 
         // Controls
         const sliders = {
@@ -153,6 +153,23 @@
             renderer.render(scene, camera);
         }
         animate();
+        // Camera setup
+camera.position.set(0, 2, 5); // Center the camera on the sphere
+camera.lookAt(0, 0, 0); // Ensure it points at the sphere center
+
+
+// Create a red cap (curved circular shape on the sphere)
+const capRadius = 2.001; // Match sphere radius
+const capSegments = 64;
+const capGeometry = new THREE.SphereGeometry(capRadius, capSegments, capSegments, 0, Math.PI * 2, 0, Math.PI / 6); // Clip top part
+
+const capMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000, shininess: 100, specular: 0x222222 });
+const sphereCap = new THREE.Mesh(capGeometry, capMaterial);
+
+sphereCap.position.set(0, 0, 0); // Align with the sphere
+sphereGroup.add(sphereCap); // Attach so it rotates together
+
+
     </script>
 </body>
 </html>
