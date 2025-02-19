@@ -30,7 +30,7 @@ body {
   margin: 10px auto; /* center container if you like */
   border: 1px solid #ccc;
 }
-/* Stack canvases: starryBg at the bottom, flickerCanvas in the middle, gravityCanvas on top */
+/* Stacking canvases: starryBg at the bottom, flickerCanvas in the middle, gravityCanvas on top */
 #starryBg,
 #flickerCanvas,
 #gravityCanvas {
@@ -41,7 +41,7 @@ body {
   height: 800px;
   display: block;
 }
-/* Optional: ensure the top canvas is above the others */
+
 #gravityCanvas {
   z-index: 2;
 }
@@ -53,12 +53,12 @@ body {
 }
 
 #mainHUDId {
-  /* pointer-events: none; */
+ 
+  user-select: none;
   position: absolute;
   z-index: 10;
   width: 100%;
   height: 100%;
-  /* background-color: rgba(0, 255, 255, 0.308); */
 }
 
 #velocityMainDivId {
@@ -211,8 +211,6 @@ body {
   display: none;
   text-align: center;
 }
-.resetButtonMainDiv {
-}
 
 .oxygenMainDivClass {
   position: absolute;
@@ -284,6 +282,8 @@ body {
 }
 
 .guidanceComputerInterfaceMainDivClass {
+  pointer-events: none;
+  user-select: none;
   padding: 8px 16px;
   display: flex;
   gap: 32px;

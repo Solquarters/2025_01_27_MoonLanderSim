@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Moon Lander</title>
-    <link rel="icon" type="image/x-icon" href="./img/icons8-lander-topaz-16.png">
-    <link rel="stylesheet" href="style.css">
-   
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="./img/icons8-lander-topaz-16.png"
+    />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <!-- ToDos...
+   Mondphasen, 
+   rotation der ausrichtung, 
+   Debug Raumschiff verschwindet im Mond bei max speed, 
+   responsiveness...
+  Delta Time für gleiche Frame Rate auf allen systemen
+  Mondphasen?
+  zeitlicher verlauf von geschwindigkeit als x y graph anzeigen...  -->
+
+   <!-- MAIN HUD START -->
     <div id="mainHUDId" onclick="">
       <div class="oxygenMainDivClass">
         <div class="oxygenAmountDivClass" id="oxygenAmountDivId">
@@ -20,22 +33,18 @@
         </div>
       </div>
 
-      <!-- <div class="resetButtonMainDiv"
-        
+      <!-- Analog Button START -->
+      <button
+        class="button-14 signalParentWrapperDivClass"
+        role="button"
+        id="resetButtonMainDivId"
+        onclick="resetParticle()"
       >
-        <div class="signalParentWrapperDivClass">
-          <div class="greenSignalWrapperDiv">[SPACE] to resume training</div>
-        </div>
-      </div> -->
-
-<!-- /////////////// -->
-<button class="button-14 signalParentWrapperDivClass" role="button" id="resetButtonMainDivId"
-onclick="resetParticle()">
-  <div class="button-14-top text">[SPACE] TO RESUME SIMULATION</div>
-  <div class="button-14-bottom"></div>
-  <div class="button-14-base"></div>
-</button>
-<!-- /////////////// -->
+        <div class="button-14-top text">[SPACE] TO RESUME SIMULATION</div>
+        <div class="button-14-bottom"></div>
+        <div class="button-14-base"></div>
+      </button>
+      <!-- Analog Button END -->
 
       <div class="" id="collisionMainDivId">
         <div class="collisionWrapperDiv">ON COLLISION COURSE</div>
@@ -80,50 +89,21 @@ onclick="resetParticle()">
         </div>
       </div>
 
-
-<!--       
       <div class="trainingObjectivesMainDivClass" id="squareborderWrapper">
         <span>
- 
-          <br>
-          <br>1. Land at X before Oxygen or fuel runs out.
-          <br>2. Orbit once and fly to corridor.
-          <br>3. Land and take off and land again at X positions.
-          <br>4. Orbit at lowest possible altitude in X time
-          <br>5. Perform a catapult maneuver, reach X speed + hit a corridor with X fuel.
-          </span>
-     -->
-      
-   <!-- <span>ToDos...Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...</span>  -->
-     <!-- <span>ToDos...
-    Delta Time für gleiche Frame Rate auf allen systemen
-    Mondphasen, rotation der ausrichtung, Debug Raumschiff verschwindet im Mond bei max speed, responsiveness...
-
-    zeitlicher verlauf von geschwindigkeit als x y graph anzeigen... wie ginge das ? Wie eine Art Monitor im Krankenhaus
-   </span>  -->
-      <!-- </div> -->
-
-
-
-
-      <div class="trainingObjectivesMainDivClass" id="squareborderWrapper">
-        <span>
-            <div>1. Land at X before Oxygen or fuel runs out.</div>
-            <div>2. Orbit once and fly to corridor.</div>
-            <div>3. Land and take off and land again at X positions.</div>
-            <div>4. Orbit at lowest possible altitude in X time</div>
-            <div>5. Perform a catapult maneuver, reach X speed + hit a corridor with X fuel.</div>
+          <div>1. Land at X before Oxygen or fuel runs out.</div>
+          <div>2. Orbit once and fly to corridor.</div>
+          <div>3. Land and take off and land again at X positions.</div>
+          <div>4. Orbit at lowest possible altitude in X time</div>
+          <div>
+            5. Perform a catapult maneuver, reach X speed + hit a corridor with
+            X fuel.
+          </div>
         </span>
+      </div>
     </div>
 
-
-
-
-      
-
-    </div>
     <div class="guidanceComputerInterfaceMainDivClass">
-      <!-- <button onclick="resetParticle()" style="margin: 10px;">Reset</button> -->
       <div class="velocityrMainDivClass">
         <p>VELOCITY:</p>
         <span id="velocityInfoId"></span> px/frame
@@ -137,10 +117,12 @@ onclick="resetParticle()">
 
       <div class="performanceMainDivClass">
         FPS: <span id="fpsCounterId"></span>
+      </div>
     </div>
 
-      
-    </div>
+     <!-- MAIN HUD END -->
+
+    
 
     <div class="canvas-container">
       <!-- 1) Static star background -->
@@ -150,8 +132,6 @@ onclick="resetParticle()">
       <!-- 3) Gravity simulation canvas on top -->
       <canvas id="gravityCanvas" width="1200" height="800"></canvas>
     </div>
-
-   
   </body>
   <script src="./script.js"></script>
 </html>

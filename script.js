@@ -277,8 +277,8 @@ function explodeParticle(collisionSpeed, particlevx, particlevy) {
     debris.push({
       x: particle.x,
       y: particle.y,
-      vx: (Math.random() - 0.5 + particlevx * 0.02) * collisionSpeed,
-      vy: (Math.random() - 0.5 + particlevy * 0.02) * collisionSpeed,
+      vx: (Math.random() - 0.55 + particlevx * 0.05) * collisionSpeed,
+      vy: (Math.random() - 0.55 + particlevy * 0.05) * collisionSpeed,
       radius: Math.random(),
       mass: 0.1,
       color: `${getRandomRGBColor()}`,
