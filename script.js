@@ -1,4 +1,3 @@
-
 /****************************************************
  * PART 1: STATIC BACKGROUND 
  ****************************************************/
@@ -257,6 +256,17 @@ function calculateGravity() {
 }
 
 
+
+
+function getRandomRGBColor() {
+    const colors = [
+        'rgb(63, 63, 255)', // Blue
+        'rgb(153, 153, 153)' // Gray
+    ];
+    
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
 // Add new explosion function
 function explodeParticle(collisionSpeed, particlevx, particlevy) {
   particle.isActive = false;
@@ -271,12 +281,11 @@ function explodeParticle(collisionSpeed, particlevx, particlevy) {
       vy: (Math.random() - 0.5 + particlevy * 0.02) * collisionSpeed,
       radius: Math.random(),
       mass: 0.1,
-      color: `rgb(255, 100, 100)`,
+      color: `${getRandomRGBColor()}`,
       isActive: true,
     });
   }
 }
-
 
 
 function applyThrust(direction) {
