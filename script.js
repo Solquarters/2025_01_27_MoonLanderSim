@@ -273,7 +273,7 @@ function explodeShip(collisionSpeed, particlevx, particlevy) {
       vx: (Math.random() - 0.55 + particlevx * 0.05) * collisionSpeed,
       vy: (Math.random() - 0.55 + particlevy * 0.05) * collisionSpeed,
       radius: radius,
-      mass: Math.random()* radius*0.2 + 0.1,
+      mass: Math.random()*0.16*radius + 0.1,
       color: `${getRandomRGBColor()}`,
       isActive: true,
     });
@@ -352,7 +352,7 @@ function drawThrustIndicators(p) {
 }
 
 
-function update() {
+function updateNextFrame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (particle.isActive) {
@@ -362,9 +362,8 @@ function update() {
       missionTimer.start(); // Start the timer if it hasn't started
     }
 
-    // Existing movement code
-    let thrustX = 0,
-      thrustY = 0;
+    let thrustX = 0, thrustY = 0;
+
     const isThrusting = Object.values(keysPressed).some((key) => key);
 
     // Only apply thrust if we have fuel
@@ -385,12 +384,12 @@ function update() {
   }
 
   debris.forEach((debrisPiece, index) => {
-    // If already landed, skip gravity/velocity:
+    // If already landed, skip gravity calc:
     if (debrisPiece.landed) {
       return;
     }
 
-    // ... otherwise do the usual gravity stuff ...
+    //otherwise calc gravity 
     const dx = centerMass.x - debrisPiece.x;
     const dy = centerMass.y - debrisPiece.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -454,7 +453,7 @@ function update() {
 
   fpsCounter.trackFrame();
 
-  requestAnimationFrame(update);
+  requestAnimationFrame(updateNextFrame);
 }
 
 
@@ -853,7 +852,7 @@ function resetParticle() {
 const fpsCounter = new FPSCounter("fpsCounterId");
 
 function initSimulation(){
-    update();
+    updateNextFrame();
     resetParticle();
     futurePath = calculateFuturePath();
 }
