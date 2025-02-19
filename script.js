@@ -169,9 +169,6 @@ const THRUST_FORCE = 0.07;
 const THRUST_DISPLAY_TIME = 15;
 const trace = [];
 const MAX_TRACE_LENGTH = 300;
-
-let lastMousePos = { x: 0, y: 0 };
-let currentMousePos = { x: 0, y: 0 };
 let debris = [];
 
 const centerMass = {
@@ -207,7 +204,7 @@ function drawThrust(particle) {
   if (particle.thrust.timer > 0) {
     ctx.save();
     ctx.translate(particle.x, particle.y);
-    ctx.rotate(particle.thrust.direction);
+    // ctx.rotate(particle.thrust.direction);
 
     ctx.beginPath();
     ctx.moveTo(-particle.radius, 0);
@@ -224,9 +221,6 @@ function drawThrust(particle) {
   }
 }
 
-
-
-// Modify the calculateGravity function
 function calculateGravity() {
   const dx = centerMass.x - particle.x;
   const dy = centerMass.y - particle.y;
@@ -235,8 +229,9 @@ function calculateGravity() {
   // Check for collision
   if (distance < centerMass.radius + particle.radius) {
     const collisionSpeed = getVelocityMaginute(particle.vx, particle.vy);
+
     if (collisionSpeed >= COLLISION_SPEED_THRESHOLD) {
-      explodeParticle(collisionSpeed, particle.vx, particle.vy);
+      explodeShip(collisionSpeed, particle.vx, particle.vy);
       deleteCollisionWarningButton();
       displayResetButton();
     } else {
@@ -255,32 +250,30 @@ function calculateGravity() {
   particle.vy += force * Math.sin(angle);
 }
 
-
-
-
 function getRandomRGBColor() {
     const colors = [
-        'rgb(63, 63, 255)', // Blue
-        'rgb(153, 153, 153)' // Gray
+        'rgb(63, 63, 255)', 
+        'rgb(153, 153, 153)' 
     ];
-    
     return colors[Math.floor(Math.random() * colors.length)];
 }
 
-// Add new explosion function
-function explodeParticle(collisionSpeed, particlevx, particlevy) {
+function explodeShip(collisionSpeed, particlevx, particlevy) {
   particle.isActive = false;
 
-  // Create debris pieces
-  const numDebris = Math.floor(Math.random() * 11) + 250; // 20-30 pieces
+  // Creating debris pieces
+  const numDebris = Math.floor(Math.random() * 11) + 180; 
   for (let i = 0; i < numDebris; i++) {
+
+    const radius = Math.random() + 0.12;
+
     debris.push({
       x: particle.x,
       y: particle.y,
       vx: (Math.random() - 0.55 + particlevx * 0.05) * collisionSpeed,
       vy: (Math.random() - 0.55 + particlevy * 0.05) * collisionSpeed,
-      radius: Math.random(),
-      mass: 0.1,
+      radius: radius,
+      mass: Math.random()* radius*0.2 + 0.1,
       color: `${getRandomRGBColor()}`,
       isActive: true,
     });
