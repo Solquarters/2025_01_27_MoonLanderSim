@@ -262,16 +262,16 @@ function explodeShip(collisionSpeed, particlevx, particlevy) {
   particle.isActive = false;
 
   // Creating debris pieces
-  const numDebris = Math.floor(Math.random() * 11) + 180; 
+  const numDebris = Math.floor(Math.random() * 11) + 150; 
   for (let i = 0; i < numDebris; i++) {
 
-    const radius = Math.random() + 0.12;
+    const radius = Math.random() + 0.15;
 
     debris.push({
       x: particle.x,
       y: particle.y,
-      vx: (Math.random() - 0.55 + particlevx * 0.05) * collisionSpeed,
-      vy: (Math.random() - 0.55 + particlevy * 0.05) * collisionSpeed,
+      vx: (Math.random() - 0.6 + particlevx * 0.05) * collisionSpeed,
+      vy: (Math.random() - 0.6 + particlevy * 0.05) * collisionSpeed,
       radius: radius,
       mass: Math.random()*0.16*radius + 0.1,
       color: `${getRandomRGBColor()}`,
@@ -383,6 +383,47 @@ function updateNextFrame() {
     missionTimer.stop();
   }
 
+  applyGravityToDebris(centerMass);
+
+  
+
+  ///DRAWING START///
+  // Keep track of trail
+  trace.push({ x: particle.x, y: particle.y });
+  if (trace.length > MAX_TRACE_LENGTH) {
+    trace.shift();
+  }
+  drawTrace();
+  drawCenterMassWithImage(centerMass);
+  drawFuturePath();
+
+  // Draw spaceship if active
+  if (particle.isActive) {
+    drawObject(particle, "blue");
+    drawThrustIndicators(particle);
+  }
+
+  // Draw debris
+  debris.forEach((debrisPiece) => {
+    drawObject(debrisPiece, debrisPiece.color);
+  });
+
+  drawVelocityInfo(particle.vx, particle.vy);
+
+  // Update timer display each frame
+  missionTimer.updateDisplay();
+
+    ///DRAWING END///
+
+  reduceOxygenAmount(missionTimer.getTime());
+
+  fpsCounter.trackFrame();
+
+  requestAnimationFrame(updateNextFrame);
+}
+
+
+function applyGravityToDebris(centerMass){
   debris.forEach((debrisPiece, index) => {
     // If already landed, skip gravity calc:
     if (debrisPiece.landed) {
@@ -419,45 +460,7 @@ function updateNextFrame() {
       debrisPiece.y += debrisPiece.vy;
     }
   });
-
-  // Keep track of trail
-  trace.push({ x: particle.x, y: particle.y });
-  if (trace.length > MAX_TRACE_LENGTH) {
-    trace.shift();
-  }
-
-  // Draw all elements
-  drawTrace();
-  drawCenterMassWithImage(centerMass);
-
-  drawFuturePath();
-
-  // Draw spaceship if active
-  if (particle.isActive) {
-    drawObject(particle, "blue");
-    drawThrustIndicators(particle);
-  }
-
-  // Draw debris
-  debris.forEach((debrisPiece) => {
-    drawObject(debrisPiece, debrisPiece.color);
-  });
-
-  
-  drawVelocityInfo(particle.vx, particle.vy);
-
-  // Update timer display each frame
-  missionTimer.updateDisplay();
-
-  reduceOxygenAmount(missionTimer.getTime());
-
-  fpsCounter.trackFrame();
-
-  requestAnimationFrame(updateNextFrame);
 }
-
-
-
 
 /****************************************************
  * PART 6: UI / HUD
