@@ -528,8 +528,9 @@ function updateNextFrame() {
     missionTimer.stop();
   }
 
-
-
+  // Rest of your updateNextFrame function...
+  
+  // Update drawing to use the rotated ship
   applyGravityToDebris(centerMass);
   
   // Drawing code...
@@ -565,6 +566,35 @@ function updateNextFrame() {
 }
 
 
+
+// function drawSpaceshipWithFeet(particle) {
+//   // First draw the landing feet (gray lines)
+//   ctx.beginPath();
+  
+//   // Left foot - angled line extending down and outward
+//   ctx.moveTo(particle.x - particle.radius/2, particle.y + particle.radius/2);
+//   ctx.lineTo(particle.x - particle.radius*1.4, particle.y + particle.radius*1.6);
+  
+//   // Right foot - angled line extending down and outward
+//   ctx.moveTo(particle.x + particle.radius/2, particle.y + particle.radius/2);
+//   ctx.lineTo(particle.x + particle.radius*1.4, particle.y + particle.radius*1.6);
+  
+//   // Set the feet style and draw them
+//   ctx.strokeStyle = "gray";
+//   ctx.lineWidth = 2;
+//   ctx.stroke();
+  
+//   // Then draw the main circular body with border
+//   ctx.beginPath();
+//   ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+//   ctx.fillStyle = "blue";
+//   ctx.fill();
+  
+//   // Add the gray border around the circle
+//   ctx.strokeStyle = "gray";
+//   ctx.lineWidth = 2;
+//   ctx.stroke();
+// }
 function drawSpaceshipWithFeet(particle) {
   ctx.save(); // Save the current context state
   
@@ -850,19 +880,27 @@ function setOxygenLevel(amount){
 
 ////ALTITUDE
 
-// Make sure the altitude calculation is reliable
 function calculateAltitude() {
   const dx = centerMass.x - particle.x;
   const dy = centerMass.y - particle.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
   
-  // Ensure we return exactly 0 when on the surface
+  // When on or below surface, return exactly 0
   if (distance <= centerMass.radius + particle.radius) {
     return 0;
   }
   
   return Math.max(0, distance - centerMass.radius);
 }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1092,10 +1130,6 @@ trackFrame() {
 }
 ////////////Framerate Displaying END////////////
 
-
-
-
-
 function resetParticle() {
   setTimeout(() => {
     particle.x = 100;
@@ -1120,7 +1154,7 @@ function resetParticle() {
       missionTimer.reset();
     }
     
-   
+
     
     hideDisplayButton();
   }, 120);
@@ -1130,7 +1164,7 @@ function resetParticle() {
 const fpsCounter = new FPSCounter("fpsCounterId");
 
 function initSimulation() {
-
+// Generate wheel first
   updateNextFrame();
   resetParticle();
   futurePath = calculateFuturePath();
