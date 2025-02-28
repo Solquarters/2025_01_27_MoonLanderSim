@@ -214,7 +214,7 @@ body {
 
 .oxygenMainDivClass {
   position: absolute;
-  top: calc(50% - 15%);
+  top: calc(20%);
   right: 5%;
   border: 2px solid rgba(255, 255, 255, 0.829);
   border-radius: 4px;
@@ -229,7 +229,7 @@ body {
 
 .fuelMainDivClass {
   position: absolute;
-  top: calc(50% - 15%);
+  top: calc(20% );
   right: 2.5%;
   border: 2px solid rgba(255, 255, 255, 0.829);
   border-radius: 4px;
@@ -516,6 +516,18 @@ color: rgb(54, 54, 54);
     font-size: 16px;
 
 }
+
+
+
+
+/* 
+////////////ALTITUDE DISPLAY FIRST TRY///////
+ */
+ 
+
+
+
+
 
 
 @keyframes warningBlink {

@@ -119,6 +119,7 @@ const keysPressed = {
   ArrowRight: false,
   ArrowUp: false,
   ArrowDown: false,
+  KeyS: false,  
 };
 
 document.addEventListener("keydown", (e) => {
@@ -179,6 +180,19 @@ const centerMass = {
 };
 
 //Spaceship
+// const particle = {
+//   x: 50,
+//   y: 20,
+//   radius: 6,
+//   mass: 0.5,
+//   vx: 0,
+//   vy: 0,
+//   thrust: {
+//     active: false,
+//     direction: 0,
+//     timer: 0,
+//   },
+// };
 const particle = {
   x: 50,
   y: 20,
@@ -186,6 +200,11 @@ const particle = {
   mass: 0.5,
   vx: 0,
   vy: 0,
+  rotation: 0,         // Current rotation angle in radians
+  rotationVelocity: 0,  // Angular velocity
+  rotationAccel: 0.002, // How fast rotation speed increases when key is held
+  maxRotationVel: 0.1,  // Maximum rotation speed
+  stabilizeStrength: 0.005, // How quickly stabilization slows rotation
   thrust: {
     active: false,
     direction: 0,
@@ -227,16 +246,22 @@ function calculateGravity() {
   const distance = Math.sqrt(dx * dx + dy * dy);
 
   // Check for collision
-  if (distance < centerMass.radius + particle.radius) {
+  if (  (distance < centerMass.radius + particle.radius ) )  {
     const collisionSpeed = getVelocityMaginute(particle.vx, particle.vy);
 
     if (collisionSpeed >= COLLISION_SPEED_THRESHOLD) {
+      let nadirPoint = getSurfaceInterceptPoint(dy, dx);
+      particle.x = nadirPoint.x;
+      particle.y = nadirPoint.y;
+
       explodeShip(collisionSpeed, particle.vx, particle.vy);
       deleteCollisionWarningButton();
       displayResetButton();
     } else {
       particle.vx = 0;
       particle.vy = 0;
+      particle.rotationVelocity = 0;
+   
     }
     return;
   }
@@ -248,6 +273,17 @@ function calculateGravity() {
 
   particle.vx += force * Math.cos(angle);
   particle.vy += force * Math.sin(angle);
+}
+
+//Vector between centerMass and ship intercepting centermassSurface, also called Nadir Point 
+function getSurfaceInterceptPoint(dy, dx){
+  let nadirPoint = {x: 0, y: 0};
+  const angle = Math.atan2(dy, dx);
+  //Tweaking with factor 0.99 to make the ship explode just a little inside the centerMass, no matter the collisionVelocity
+  nadirPoint.x = centerMass.x - (centerMass.radius + particle.radius) * Math.cos(angle)*0.99;
+  nadirPoint.y = centerMass.y - (centerMass.radius + particle.radius) * Math.sin(angle)*0.99;
+
+  return nadirPoint;
 }
 
 function getRandomRGBColor() {
@@ -352,6 +388,77 @@ function drawThrustIndicators(p) {
 }
 
 
+// function updateNextFrame() {
+//   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+//   if (particle.isActive) {
+//     calculateGravity();
+
+//     if (!missionTimer.running) {
+//       missionTimer.start(); // Start the timer if it hasn't started
+//     }
+
+//     let thrustX = 0, thrustY = 0;
+
+//     const isThrusting = Object.values(keysPressed).some((key) => key);
+
+//     // Only apply thrust if we have fuel
+//     if (updateFuel(missionTimer.getTime(), isThrusting)) {
+//       if (keysPressed.ArrowLeft) thrustX -= THRUST_FORCE;
+//       if (keysPressed.ArrowRight) thrustX += THRUST_FORCE;
+//       if (keysPressed.ArrowUp) thrustY -= THRUST_FORCE;
+//       if (keysPressed.ArrowDown) thrustY += THRUST_FORCE;
+
+//       particle.vx += thrustX;
+//       particle.vy += thrustY;
+//     }
+
+//     particle.x += particle.vx;
+//     particle.y += particle.vy;
+//   } else {
+//     missionTimer.stop();
+//   }
+
+//   applyGravityToDebris(centerMass);
+
+  
+
+//   ///DRAWING START///
+//   // Keep track of trail
+//   trace.push({ x: particle.x, y: particle.y });
+//   if (trace.length > MAX_TRACE_LENGTH) {
+//     trace.shift();
+//   }
+//   drawTrace();
+//   drawCenterMassWithImage(centerMass);
+//   drawFuturePath();
+
+//   // Draw spaceship if active
+//   if (particle.isActive) {
+//     // drawObject(particle, "blue");
+//     drawSpaceshipWithFeet(particle);
+
+//     drawThrustIndicators(particle);
+//   }
+
+//   // Draw debris
+//   debris.forEach((debrisPiece) => {
+//     drawObject(debrisPiece, debrisPiece.color);
+//   });
+
+//   //HUD//
+//   drawVelocityInfo(particle.vx, particle.vy);
+//   missionTimer.updateDisplay();
+//   reduceOxygenAmount(missionTimer.getTime());
+
+//   ///DRAWING END///
+
+ 
+
+//   fpsCounter.trackFrame();
+
+//   requestAnimationFrame(updateNextFrame);
+// }
 function updateNextFrame() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -359,19 +466,57 @@ function updateNextFrame() {
     calculateGravity();
 
     if (!missionTimer.running) {
-      missionTimer.start(); // Start the timer if it hasn't started
+      missionTimer.start();
     }
 
-    let thrustX = 0, thrustY = 0;
+    // Handle rotation
+    if (keysPressed.ArrowLeft) {
+      particle.rotationVelocity -= particle.rotationAccel;
+      if (particle.rotationVelocity < -particle.maxRotationVel) {
+        particle.rotationVelocity = -particle.maxRotationVel;
+      }
+    }
+    if (keysPressed.ArrowRight) {
+      particle.rotationVelocity += particle.rotationAccel;
+      if (particle.rotationVelocity > particle.maxRotationVel) {
+        particle.rotationVelocity = particle.maxRotationVel;
+      }
+    }
+    
+    // Stabilize rotation if S key is pressed
+    if (keysPressed.KeyS) {
+      if (particle.rotationVelocity > 0) {
+        particle.rotationVelocity = Math.max(0, particle.rotationVelocity - particle.stabilizeStrength);
+      } else if (particle.rotationVelocity < 0) {
+        particle.rotationVelocity = Math.min(0, particle.rotationVelocity + particle.stabilizeStrength);
+      }
+    }
+    
+    // Apply rotation
+    particle.rotation += particle.rotationVelocity;
+    
+    // Keep rotation within 0-2π range
+    particle.rotation = particle.rotation % (Math.PI * 2);
+    if (particle.rotation < 0) {
+      particle.rotation += Math.PI * 2;
+    }
 
-    const isThrusting = Object.values(keysPressed).some((key) => key);
+    // Apply thrust in direction the ship is facing (for ArrowUp)
+    let thrustX = 0, thrustY = 0;
+    const isThrusting = keysPressed.ArrowUp || keysPressed.ArrowDown;
 
     // Only apply thrust if we have fuel
     if (updateFuel(missionTimer.getTime(), isThrusting)) {
-      if (keysPressed.ArrowLeft) thrustX -= THRUST_FORCE;
-      if (keysPressed.ArrowRight) thrustX += THRUST_FORCE;
-      if (keysPressed.ArrowUp) thrustY -= THRUST_FORCE;
-      if (keysPressed.ArrowDown) thrustY += THRUST_FORCE;
+      if (keysPressed.ArrowUp) {
+        // Apply thrust in the direction the ship is facing
+        thrustX += Math.sin(particle.rotation) * THRUST_FORCE;
+        thrustY -= Math.cos(particle.rotation) * THRUST_FORCE;
+      }
+      if (keysPressed.ArrowDown) {
+        // Apply thrust in the opposite direction
+        thrustX -= Math.sin(particle.rotation) * THRUST_FORCE;
+        thrustY += Math.cos(particle.rotation) * THRUST_FORCE;
+      }
 
       particle.vx += thrustX;
       particle.vy += thrustY;
@@ -383,12 +528,11 @@ function updateNextFrame() {
     missionTimer.stop();
   }
 
+
+
   applyGravityToDebris(centerMass);
-
   
-
-  ///DRAWING START///
-  // Keep track of trail
+  // Drawing code...
   trace.push({ x: particle.x, y: particle.y });
   if (trace.length > MAX_TRACE_LENGTH) {
     trace.shift();
@@ -399,8 +543,8 @@ function updateNextFrame() {
 
   // Draw spaceship if active
   if (particle.isActive) {
-    drawObject(particle, "blue");
-    drawThrustIndicators(particle);
+    drawSpaceshipWithFeet(particle);
+    drawThrustIndicatorsRotated(particle);
   }
 
   // Draw debris
@@ -408,18 +552,123 @@ function updateNextFrame() {
     drawObject(debrisPiece, debrisPiece.color);
   });
 
+  // HUD...
   drawVelocityInfo(particle.vx, particle.vy);
-
-  // Update timer display each frame
   missionTimer.updateDisplay();
-
-    ///DRAWING END///
-
   reduceOxygenAmount(missionTimer.getTime());
+
+
 
   fpsCounter.trackFrame();
 
   requestAnimationFrame(updateNextFrame);
+}
+
+
+function drawSpaceshipWithFeet(particle) {
+  ctx.save(); // Save the current context state
+  
+  // Translate to the center of the ship
+  ctx.translate(particle.x, particle.y);
+  
+  // Rotate by the ship's rotation angle
+  ctx.rotate(particle.rotation);
+  
+  // Draw feet (now relative to 0,0)
+  ctx.beginPath();
+  // Left foot
+  ctx.moveTo(-particle.radius/2, particle.radius/2);
+  ctx.lineTo(-particle.radius*1.4, particle.radius*1.6);
+  
+  // Right foot
+  ctx.moveTo(particle.radius/2, particle.radius/2);
+  ctx.lineTo(particle.radius*1.4, particle.radius*1.6);
+  
+  ctx.strokeStyle = "gray";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  
+  // Draw the circle
+  ctx.beginPath();
+  ctx.arc(0, 0, particle.radius, 0, Math.PI * 2);
+  ctx.fillStyle = "blue";
+  ctx.fill();
+  ctx.strokeStyle = "gray";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  
+  ctx.restore(); // Restore the context to its original state
+};
+function drawThrustIndicatorsRotated(p) {
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.rotation);
+  
+  const flickerAlpha = 0.3 + 0.5 * Math.random();
+  
+  // Set main thrust color to yellow
+  ctx.fillStyle = `rgba(255, 255, 0, ${flickerAlpha})`;
+  const offset = p.radius + 2;
+
+  // Up (forward thrust)
+  if (keysPressed.ArrowUp) {
+    ctx.beginPath();
+    ctx.moveTo(0, offset+4);
+    ctx.lineTo(-5, offset + 8);
+    ctx.lineTo(5, offset + 8);
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  // Down (backward thrust)
+  if (keysPressed.ArrowDown) {
+    ctx.beginPath();
+    ctx.moveTo(0, -offset-4);
+    ctx.lineTo(-5, -offset - 8);
+    ctx.lineTo(5, -offset - 8);
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  // Rotational thrust indicators - MODIFIED
+  if (keysPressed.ArrowLeft || keysPressed.ArrowRight) {
+    ctx.fillStyle = `rgba(255, 255, 0, ${flickerAlpha})`;
+    
+    // Left rotation thrust - angled downward to create rotational effect
+    if (keysPressed.ArrowLeft) {
+      ctx.beginPath();
+      // Point of the triangle moved down to create angle
+      ctx.moveTo(-offset, 5);
+      // Adjusted to maintain same shape but at angle
+      ctx.lineTo(-offset - 6, 3);
+      ctx.lineTo(-offset - 6, 7);
+      ctx.closePath();
+      ctx.fill();
+    }
+    
+    // Right rotation thrust - angled downward to create rotational effect
+    if (keysPressed.ArrowRight) {
+      ctx.beginPath();
+      // Point of the triangle moved down to create angle
+      ctx.moveTo(offset, 5);
+      // Adjusted to maintain same shape but at angle
+      ctx.lineTo(offset + 6, 3);
+      ctx.lineTo(offset + 6, 7);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+  
+  // Show stabilization indicator
+  if (keysPressed.KeyS && particle.rotationVelocity !== 0) {
+    ctx.strokeStyle = `rgba(255, 255, 255, ${flickerAlpha})`; 
+    ctx.beginPath();
+    ctx.arc(0, 0, p.radius + 10, 0, Math.PI * 2);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+  
+  ctx.restore();
 }
 
 
@@ -460,7 +709,7 @@ function applyGravityToDebris(centerMass){
       debrisPiece.y += debrisPiece.vy;
     }
   });
-}
+};
 
 /****************************************************
  * PART 6: UI / HUD
@@ -528,6 +777,7 @@ function reduceOxygenAmount(elapsedTime) {
 document.addEventListener("DOMContentLoaded", () => {
     // Initial positioning
     updateVelocityHUD(0);
+
     window.dispatchEvent(new Event("resize"));
   
     
@@ -592,6 +842,31 @@ function setOxygenLevel(amount){
   oxygenContainer.style.height = `${amount}%`;
   lastOxygenUpdate = 0;
 }
+
+
+
+
+
+
+////ALTITUDE
+
+// Make sure the altitude calculation is reliable
+function calculateAltitude() {
+  const dx = centerMass.x - particle.x;
+  const dy = centerMass.y - particle.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  
+  // Ensure we return exactly 0 when on the surface
+  if (distance <= centerMass.radius + particle.radius) {
+    return 0;
+  }
+  
+  return Math.max(0, distance - centerMass.radius);
+}
+
+
+
+
 
 /****************************************************
  * PART 7: FUTURE PATH PROJECTION
@@ -821,43 +1096,44 @@ trackFrame() {
 
 
 
-//Reset simulation
 function resetParticle() {
-    setTimeout(() => {
-  particle.x = 100;
+  setTimeout(() => {
+    particle.x = 100;
     particle.y = 100;
     particle.vx = 0;
     particle.vy = 0;
-  
+    particle.rotation = Math.PI-1;
+    particle.rotationVelocity = 0.02;
+    
     particle.thrust.active = false;
     particle.thrust.timer = 0;
     particle.isActive = true;
     trace.length = 0;
     debris = [];
     futurePath = calculateFuturePath();
-  
+    
     setOxygenLevel(80);
     setFuelLevel(80);
     lastFuelUpdateTime = 0;
-  
+    
     if (missionTimer) {
       missionTimer.reset();
     }
-  
-    hideDisplayButton();
-    },120);
+    
    
-  }
-  
-
+    
+    hideDisplayButton();
+  }, 120);
+}
 
 ///Initializing FPS Displaying, needs to be initialized before update() function is called.
 const fpsCounter = new FPSCounter("fpsCounterId");
 
-function initSimulation(){
-    updateNextFrame();
-    resetParticle();
-    futurePath = calculateFuturePath();
+function initSimulation() {
+
+  updateNextFrame();
+  resetParticle();
+  futurePath = calculateFuturePath();
 }
 
 //INITIALIZE
