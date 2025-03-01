@@ -782,16 +782,30 @@ color: rgb(54, 54, 54);
 
 }
 
-/* @keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-} */
 
+/* 
+Warning blink when Roll is over threshhold */
 
+@keyframes pulse-green {
+  0%, 100% { border-top-color: #00ff00; opacity: 0.6; }
+  50% { border-top-color: #00ff00; opacity: 1; }
+}
+
+/* Class that applies the green pulse animation */
+.green-pulse::before {
+  animation: pulse-green 1.5s infinite; /* Slower, smoother pulse */
+  border-top-color: #00ff00; /* Base color is green */
+}
+
+/* Keep your existing red blink animation */
+@keyframes blink-red {
+  0%, 100% { border-top-color: #ffffff; }
+  50% { border-top-color: #ff0000; }
+}
+
+.warning-blink::before {
+  animation: blink-red 0.3s infinite;
+}
 
 
 

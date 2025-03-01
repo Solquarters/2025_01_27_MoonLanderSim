@@ -982,10 +982,75 @@ function getRelativeShipRollToSurfaceDegrees() {
 //   document.getElementById('rollNumbericId').textContent = radiantToGrad;
 // }
 
+// function updateRollInHUD() {
+//   let relativeDegrees = getRelativeShipRollToSurfaceDegrees();
+//   document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${relativeDegrees+90}deg)`;
+//   document.getElementById('rollNumbericId').textContent = relativeDegrees-90;
+// }
+
+// function updateRollInHUD() {
+//   // Get the relative angle in degrees
+//   let relativeDegrees = getRelativeShipRollToSurfaceDegrees();
+  
+//   // Update the rotation display
+//   document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${relativeDegrees+90}deg)`;
+//   document.getElementById('rollNumbericId').textContent = relativeDegrees-90;
+  
+//   // Get the elements that contain the pseudo-elements
+//   const halfCircle = document.querySelector('.half-circle-clip');
+//   const mainDisplay = document.querySelector('.mainFDAIDisplayContainerClass');
+  
+//   // Check if angle is over 20 degrees (absolute value)
+//   if (Math.abs(relativeDegrees-90) > 20) {
+//     // Add warning class to make pseudo-elements blink
+//     halfCircle.classList.add('warning-blink');
+//     mainDisplay.classList.add('warning-blink');
+//   }else if(-20 <= Math.abs(relativeDegrees-90) && Math.abs(relativeDegrees-90) <= 20){
+
+//     halfCircle.classList.add('greenIndicatorClass');
+//     mainDisplay.classList.add('greenIndicatorClass');
+
+//   } else {
+
+   
+//     halfCircle.classList.remove('greenIndicatorClass');
+//     mainDisplay.classList.remove('greenIndicatorClass');
+//     // Remove warning class if angle is acceptable
+//     halfCircle.classList.remove('warning-blink');
+//     mainDisplay.classList.remove('warning-blink');
+//   }
+// }
+
 function updateRollInHUD() {
+  // Get the relative angle in degrees
   let relativeDegrees = getRelativeShipRollToSurfaceDegrees();
-  document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${relativeDegrees+90}deg)`;
-  document.getElementById('rollNumbericId').textContent = relativeDegrees-90;
+  
+  // Calculate the display angle and actual roll error
+  const displayAngle = relativeDegrees + 90;
+  const rollError = Math.abs(relativeDegrees - 90);
+  
+  // Update the rotation display
+  document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${displayAngle}deg)`;
+  document.getElementById('rollNumbericId').textContent = relativeDegrees - 90;
+  
+  // Get the elements that contain the pseudo-elements
+  const halfCircle = document.querySelector('.half-circle-clip');
+  const mainDisplay = document.querySelector('.mainFDAIDisplayContainerClass');
+  
+  // First remove all possible classes to avoid conflicts
+  halfCircle.classList.remove('warning-blink', 'green-pulse');
+  mainDisplay.classList.remove('warning-blink', 'green-pulse');
+  
+  // Now add the appropriate class based on the roll error
+  if (rollError <= 20) {
+    // Within 20 degrees - show green pulse
+    halfCircle.classList.add('green-pulse');
+    mainDisplay.classList.add('green-pulse');
+  } else {
+    // More than 20 degrees off - show red warning blink
+    halfCircle.classList.add('warning-blink');
+    mainDisplay.classList.add('warning-blink');
+  }
 }
 
 
