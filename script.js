@@ -1298,6 +1298,8 @@ function resetParticle() {
     particle.thrust.active = false;
     particle.thrust.timer = 0;
     particle.isActive = true;
+    particle.landed = false;
+
     trace.length = 0;
     debris = [];
     futurePath = calculateFuturePath();
