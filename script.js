@@ -1185,11 +1185,11 @@ trackFrame() {
 
 function resetParticle() {
   setTimeout(() => {
-    // particle.x = 100;
-    // particle.y = 100;
+    particle.x = 100;
+    particle.y = 100;
 
-    particle.x = canvas.width/2 + centerMass.radius-20,
-    particle.y =  canvas.height/2 +centerMass.radius-20,
+    // particle.x = canvas.width/2 + centerMass.radius-20,
+    // particle.y =  canvas.height/2 +centerMass.radius-20,
 
     // particle.x = 10;
     // particle.y = 10;
