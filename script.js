@@ -851,14 +851,11 @@ function updateVelocityHUD(velocityMagnitude) {
   const container = document.getElementById("velocityMainDivId");
 
   // Get fresh measurements each time
-  const stepHeight = document.querySelector(
-    ".single-speed-div-class"
-  ).offsetHeight;
+  const stepHeight = document.querySelector(".single-speed-div-class").offsetHeight;
   const containerHeight = container.offsetHeight;
 
   const baseOffset = containerHeight+stepHeight+4;
-  const translateYValue =
-    (baseOffset - velocityMagnitude * stepHeight) * -1;
+  const translateYValue = (baseOffset - velocityMagnitude * stepHeight) * -1;
 
   velocityStepsDiv.style.transform = `translateY(${translateYValue}px)`;
 }
@@ -916,6 +913,8 @@ function calculateAltitude() {
 
 // }
 function updateAltitudeHUD(altitude) {
+
+
   const altitudeStepsDiv = document.getElementById("altitudeStepsDivId");
   const mainContainer = document.getElementById("altitudeMainDivId");
 
@@ -923,11 +922,13 @@ function updateAltitudeHUD(altitude) {
   const stepHeight = document.querySelector(".single-altitude-div-class").offsetHeight;
   const containerHeight = mainContainer.offsetHeight;
 
-  // Match the velocity calculation approach
-  const baseOffset = containerHeight + stepHeight*5.13;
-  const translateYValue = (baseOffset - altitude * (stepHeight/100)) * -1;
-
+  // Calculate a normalized scale factor based on our altitude range
+  // Assuming altitude ranges from 0-600 and our display shows 0-550 in steps of 100
+  const normalizedAltitude = altitude / 100; // Now 0-6 range similar to velocity 0-6 range
   
+  // Use the exact same formula as velocity, with our normalized altitude
+  const baseOffset = containerHeight + stepHeight*4.22;
+  const translateYValue = (baseOffset - normalizedAltitude * stepHeight) * -1;
 
   let roundedAltitude = Math.floor(altitude);
   let altitudeNumberSpanId = document.getElementById('altitudeNumbericId');
@@ -1187,11 +1188,11 @@ function resetParticle() {
     // particle.x = 100;
     // particle.y = 100;
 
-    // particle.x = canvas.width/2 + centerMass.radius-20,
-    // particle.y =  canvas.height/2 +centerMass.radius-20,
+    particle.x = canvas.width/2 + centerMass.radius-20,
+    particle.y =  canvas.height/2 +centerMass.radius-20,
 
-    particle.x = 10;
-    particle.y = 10;
+    // particle.x = 10;
+    // particle.y = 10;
 
 
     particle.vx = 0;
