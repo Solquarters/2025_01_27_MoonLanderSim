@@ -562,6 +562,7 @@ function updateNextFrame() {
   missionTimer.updateDisplay();
   reduceOxygenAmount(missionTimer.getTime());
 
+  updateRollInHUD(particle.rotation);
 
 
   fpsCounter.trackFrame();
@@ -891,30 +892,7 @@ function calculateAltitude() {
   return Math.max(0, distance - centerMass.radius);
 }
 
-// function updateAltitudeHUD(altitude) {
-//   const altitudeStepsDiv = document.getElementById("altitudeStepsDivId");
-//   const mainContainer = document.getElementById("altitudeMainDivId");
 
-//   // Get fresh measurements each time
-//   const stepHeight = document.querySelector(".single-altitude-div-class").offsetHeight;
-//   const containerHeight = mainContainer.offsetHeight;
-
-//   const baseOffset = containerHeight+stepHeight*4;
-//   const translateYValue =(baseOffset - altitude * stepHeight) * -1;
-
-//   altitudeStepsDiv.style.transform = `translateY(${translateYValue}px)`;
-
-//   let roundedAltitude = Math.floor(altitude);
-// let velocityNumberSpanId = document.getElementById('altitudeNumbericId');
-// velocityNumberSpanId.textContent = `${Math.floor(altitude)} px`;
-
-// if(roundedAltitude < 50){
-//   velocityNumberSpanId.style.color = 'rgb(0, 255, 0)';
-// }else{
-//   velocityNumberSpanId.style.color ='rgb(255, 255, 255)';
-// }
-
-// }
 function updateAltitudeHUD(altitude) {
 
 
@@ -953,6 +931,12 @@ function updateAltitudeHUD(altitude) {
 }
 
 
+////////////////////////ROLL////////////////
+function updateRollInHUD(rotation){
+  let radiantToGrad = Math.floor(rotation*57.29) ;
+  document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${radiantToGrad }deg)`;
+  document.getElementById('rollNumbericId').textContent = radiantToGrad;
+}
 
 
 

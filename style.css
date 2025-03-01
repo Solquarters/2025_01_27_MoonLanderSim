@@ -675,7 +675,71 @@ color: rgb(54, 54, 54);
   justify-content: center;
   position: relative;
 }
+/* Degree markers - using pseudo-elements for main cardinal points */
+.mainCircleDisplay::before, 
+.mainCircleDisplay::after,
+.degree-marker-0,
+.degree-marker-90,
+.degree-marker-180,
+.degree-marker-270 {
+  content: '';
+  position: absolute;
+  background-color: #ffffff;
+}
 
+/* Horizontal markers (0° and 180°) */
+.mainCircleDisplay::before {
+  width: 10px;
+  height: 2px;
+  top: 50%;
+  left: -8px;
+  transform: translateY(-50%);
+  z-index: 11;
+}
+
+.mainCircleDisplay::after {
+  width: 10px;
+  height: 2px;
+  top: 50%;
+  right: -8px;
+  transform: translateY(-50%);
+}
+
+/* Additional degree markers */
+.degree-marker-0, 
+.degree-marker-90,
+.degree-marker-180,
+.degree-marker-270 {
+  width: 8px;
+  height: 2px;
+}
+
+/* Top marker (90°) */
+.degree-marker-90 {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%) rotate(90deg);
+}
+
+/* Bottom marker (270°) */
+.degree-marker-270 {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(90deg);
+}
+
+/* Additional smaller markers for 30°, 60°, etc. */
+.small-markers::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(223, 223, 223, 0.329);
+  border-radius: 50%;
+  box-sizing: border-box;
+  left: 0; 
+  top: 0;
+}
 
 
 .half-circle-clip {
@@ -687,17 +751,31 @@ color: rgb(54, 54, 54);
   left: 0; /* Center horizontally */
   top: 0; /* Position at the top of parent */
   transform-origin: bottom center; /* Set rotation origin to bottom center */
-  animation: rotate 4s linear infinite;
+  /* animation: rotate 4s linear infinite; */
+  transform: rotate(180deg);
+}
+.rollLabel {
+  position: absolute;
+  bottom: -18px;
+  transform: translateX(-50% +1);
+  color: #ffffff;
+  font-size: 12px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  
+
 }
 
-@keyframes rotate {
+/* @keyframes rotate {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
   }
-}
+} */
 
 
 
