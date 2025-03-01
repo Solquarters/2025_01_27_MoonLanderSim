@@ -289,6 +289,7 @@ function getSurfaceInterceptPoint(dy, dx){
   return nadirPoint;
 }
 
+
 function getRandomRGBColor() {
     const colors = [
         'rgb(63, 63, 255)', 
@@ -932,18 +933,60 @@ function updateAltitudeHUD(altitude) {
 
 
 ////////////////////////ROLL////////////////
-function updateRollInHUD(rotation){
-  let radiantToGrad = Math.floor(rotation*57.29) ;
-  document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${radiantToGrad }deg)`;
-  document.getElementById('rollNumbericId').textContent = radiantToGrad;
+
+
+
+function getNadirPoint(centerMassX, centerMassY, shipX, shipY){
+  const dx = centerMassX- shipX;
+  const dy = centerMassY - shipY;
+
+  let nadirPoint = {x: 0, y: 0};
+  const angle = Math.atan2(dy, dx);
+  nadirPoint.x = centerMass.x - (centerMass.radius + particle.radius) * Math.cos(angle);
+  nadirPoint.y = centerMass.y - (centerMass.radius + particle.radius) * Math.sin(angle);
+
+  return nadirPoint;
 }
 
 
 
+function getRelativeShipRollToSurfaceDegrees() {
+  // Get the nadir point
+  const nadirPoint = getNadirPoint(centerMass.x, centerMass.y, particle.x, particle.y);
+  
+  // Calculate vector from center to nadir point
+  const nadirVector = {
+    x: nadirPoint.x - centerMass.x,
+    y: nadirPoint.y - centerMass.y
+  };
+  
+  // Calculate surface angle (the angle of the radius vector)
+  const surfaceAngle = Math.atan2(nadirVector.y, nadirVector.x);
+  
+  // Calculate relative angle between ship rotation and surface
+  let relativeAngle = particle.rotation - surfaceAngle;
+  
+  // Convert to degrees
+  let degrees = relativeAngle * (180 / Math.PI);
+  
+  // Normalize to -180 to +180 range (easier to understand for navigation)
+  if (degrees > 180) degrees -= 360;
+  if (degrees < -180) degrees += 360;
+  
+  return Math.floor(degrees); // Return as an integer
+}
 
+// function updateRollInHUD(rotation){
+//   let radiantToGrad = Math.floor(rotation*57.29) ;
+//   document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${radiantToGrad }deg)`;
+//   document.getElementById('rollNumbericId').textContent = radiantToGrad;
+// }
 
-
-
+function updateRollInHUD() {
+  let relativeDegrees = getRelativeShipRollToSurfaceDegrees();
+  document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${relativeDegrees+90}deg)`;
+  document.getElementById('rollNumbericId').textContent = relativeDegrees+90;
+}
 
 
 /****************************************************
