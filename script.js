@@ -891,31 +891,62 @@ function calculateAltitude() {
   return Math.max(0, distance - centerMass.radius);
 }
 
+// function updateAltitudeHUD(altitude) {
+//   const altitudeStepsDiv = document.getElementById("altitudeStepsDivId");
+//   const mainContainer = document.getElementById("altitudeMainDivId");
+
+//   // Get fresh measurements each time
+//   const stepHeight = document.querySelector(".single-altitude-div-class").offsetHeight;
+//   const containerHeight = mainContainer.offsetHeight;
+
+//   const baseOffset = containerHeight+stepHeight*4;
+//   const translateYValue =(baseOffset - altitude * stepHeight) * -1;
+
+//   altitudeStepsDiv.style.transform = `translateY(${translateYValue}px)`;
+
+//   let roundedAltitude = Math.floor(altitude);
+// let velocityNumberSpanId = document.getElementById('altitudeNumbericId');
+// velocityNumberSpanId.textContent = `${Math.floor(altitude)} px`;
+
+// if(roundedAltitude < 50){
+//   velocityNumberSpanId.style.color = 'rgb(0, 255, 0)';
+// }else{
+//   velocityNumberSpanId.style.color ='rgb(255, 255, 255)';
+// }
+
+// }
 function updateAltitudeHUD(altitude) {
   const altitudeStepsDiv = document.getElementById("altitudeStepsDivId");
-  const container = document.getElementById("altitudeMainDivId");
+  const mainContainer = document.getElementById("altitudeMainDivId");
 
   // Get fresh measurements each time
   const stepHeight = document.querySelector(".single-altitude-div-class").offsetHeight;
-  const containerHeight = container.offsetHeight;
+  const containerHeight = mainContainer.offsetHeight;
 
-  const baseOffset = containerHeight+stepHeight;
-  const translateYValue =(baseOffset - altitude * stepHeight) * -1;
+  // Match the velocity calculation approach
+  const baseOffset = containerHeight + stepHeight*5.13;
+  const translateYValue = (baseOffset - altitude * (stepHeight/100)) * -1;
 
-  altitudeStepsDiv.style.transform = `translateY(${translateYValue}px)`;
+  
 
   let roundedAltitude = Math.floor(altitude);
-let velocityNumberSpanId = document.getElementById('altitudeNumbericId');
-velocityNumberSpanId.textContent = `${Math.floor(altitude)} px`;
+  let altitudeNumberSpanId = document.getElementById('altitudeNumbericId');
+  altitudeNumberSpanId.textContent = `${roundedAltitude} px`;
+  
 
-if(roundedAltitude < 50){
-  velocityNumberSpanId.style.color = 'rgb(0, 255, 0)';
-}else{
-  velocityNumberSpanId.style.color ='rgb(255, 255, 255)';
+
+  if(roundedAltitude < 50){
+    altitudeNumberSpanId.style.color = 'rgb(0, 255, 0)';
+  }else{
+    altitudeNumberSpanId.style.color = 'rgb(255, 255, 255)';
+  };
+  if(roundedAltitude > 600){
+    altitudeStepsDiv.style.transform = `translateY(${containerHeight/2}px)`;
+  }else{
+    altitudeStepsDiv.style.transform = `translateY(${translateYValue}px)`;
+  }
+ 
 }
-
-}
-
 
 
 
@@ -1153,8 +1184,16 @@ trackFrame() {
 
 function resetParticle() {
   setTimeout(() => {
-    particle.x = 100;
-    particle.y = 100;
+    // particle.x = 100;
+    // particle.y = 100;
+
+    // particle.x = canvas.width/2 + centerMass.radius-20,
+    // particle.y =  canvas.height/2 +centerMass.radius-20,
+
+    particle.x = 10;
+    particle.y = 10;
+
+
     particle.vx = 0;
     particle.vy = 0;
     particle.rotation = Math.PI-1;

@@ -581,12 +581,18 @@ color: rgb(54, 54, 54);
   overflow: hidden;
 }
 
-.altitudeStepsIndicatorClass{
+/* .altitudeStepsIndicatorClass{
   color: white;
   position: relative;
   bottom: 280%;
+} */
+.altitudeStepsIndicatorClass {
+  color: white;
+  position: relative;
+  bottom: 0;
+  transform: translateY(0);
+  transition: all 50ms ease-in-out;
 }
-
 
 .single-altitude-div-class {
   height: 50vh;
