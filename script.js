@@ -210,6 +210,7 @@ const particle = {
     direction: 0,
     timer: 0,
   },
+  landed: false
 };
 
 function drawObject(obj, color) {
@@ -258,6 +259,7 @@ function calculateGravity() {
       deleteCollisionWarningButton();
       displayResetButton();
     } else {
+      particle.landed = true;
       particle.vx = 0;
       particle.vy = 0;
       particle.rotationVelocity = 0;
@@ -274,6 +276,7 @@ function calculateGravity() {
   particle.vx += force * Math.cos(angle);
   particle.vy += force * Math.sin(angle);
 }
+
 
 //Vector between centerMass and ship intercepting centermassSurface, also called Nadir Point 
 function getSurfaceInterceptPoint(dy, dx){
@@ -1053,7 +1056,7 @@ function drawFuturePath() {
   ctx.setLineDash([]); // Reset dash
 
   // Draw collision indicator
-  if (collisionPoint && particle.isActive) {
+  if (collisionPoint && particle.isActive && !particle.landed) {
     if (collisionSpeed >= COLLISION_SPEED_THRESHOLD) {
       // Draw red "X" for high-speed collision
       ctx.fillStyle = "red";
