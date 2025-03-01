@@ -555,6 +555,7 @@ function updateNextFrame() {
 
   // HUD...
   drawVelocityInfo(particle.vx, particle.vy);
+  updateAltitudeHUD(calculateAltitude());
   missionTimer.updateDisplay();
   reduceOxygenAmount(missionTimer.getTime());
 
@@ -875,9 +876,6 @@ function setOxygenLevel(amount){
 
 
 
-
-
-
 ////ALTITUDE
 
 function calculateAltitude() {
@@ -893,7 +891,30 @@ function calculateAltitude() {
   return Math.max(0, distance - centerMass.radius);
 }
 
+function updateAltitudeHUD(altitude) {
+  const altitudeStepsDiv = document.getElementById("altitudeStepsDivId");
+  const container = document.getElementById("altitudeMainDivId");
 
+  // Get fresh measurements each time
+  const stepHeight = document.querySelector(".single-altitude-div-class").offsetHeight;
+  const containerHeight = container.offsetHeight;
+
+  const baseOffset = containerHeight+stepHeight;
+  const translateYValue =(baseOffset - altitude * stepHeight) * -1;
+
+  altitudeStepsDiv.style.transform = `translateY(${translateYValue}px)`;
+
+  let roundedAltitude = Math.floor(altitude);
+let velocityNumberSpanId = document.getElementById('altitudeNumbericId');
+velocityNumberSpanId.textContent = `${Math.floor(altitude)} px`;
+
+if(roundedAltitude < 50){
+  velocityNumberSpanId.style.color = 'rgb(0, 255, 0)';
+}else{
+  velocityNumberSpanId.style.color ='rgb(255, 255, 255)';
+}
+
+}
 
 
 
