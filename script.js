@@ -985,7 +985,7 @@ function getRelativeShipRollToSurfaceDegrees() {
 function updateRollInHUD() {
   let relativeDegrees = getRelativeShipRollToSurfaceDegrees();
   document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${relativeDegrees+90}deg)`;
-  document.getElementById('rollNumbericId').textContent = relativeDegrees+90;
+  document.getElementById('rollNumbericId').textContent = relativeDegrees-90;
 }
 
 

@@ -754,9 +754,23 @@ color: rgb(54, 54, 54);
   /* animation: rotate 4s linear infinite; */
   transform: rotate(180deg);
 }
+.half-circle-clip::before {
+  content: '';
+  position: absolute;
+  top: 0px; /* Position at the top of the container */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid #ffffff; /* Red triangle pointing up */
+  z-index: 10; /* Ensure it stays on top */
+}
+
 .rollLabel {
   position: absolute;
-  bottom: -18px;
+  bottom: -32px;
   transform: translateX(-50% +1);
   color: #ffffff;
   font-size: 12px;
