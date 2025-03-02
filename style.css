@@ -164,7 +164,7 @@ body {
 #landingSuccessMainDivId {
 
   display: none;
-  animation: successMessage 2.5s ease-in-out infinite;
+  animation: successMessage 3s ease-in-out infinite;
   
 }
 .bottomCenterMessageClass{
@@ -861,7 +861,7 @@ Warning blink when Roll is over threshhold */
     opacity: 1;
   }
   50% {
-    opacity: 0.4;
+    opacity: 0.2;
   }
   100% {
     opacity: 1;

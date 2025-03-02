@@ -251,7 +251,7 @@ function calculateGravity() {
   if (  (distance < centerMass.radius + particle.radius ) )  {
     const collisionSpeed = getVelocityMaginute(particle.vx, particle.vy);
 
-    if (collisionSpeed >= COLLISION_SPEED_THRESHOLD) {
+    if (collisionSpeed >= COLLISION_SPEED_THRESHOLD || getRelativeShipRollToSurfaceDegrees() > 20) {
       let nadirPoint = getSurfaceInterceptPoint(dy, dx);
       particle.x = nadirPoint.x;
       particle.y = nadirPoint.y;
@@ -280,7 +280,7 @@ function calculateGravity() {
   particle.vx += force * Math.cos(angle);
   particle.vy += force * Math.sin(angle);
 
-  // particle.landed = false;
+  particle.landed = false;
 }
 
 
@@ -1097,6 +1097,7 @@ function calculateFuturePath() {
 
 // Draw the future path and collision indicator
 function drawFuturePath() {
+  
   if (futurePath.length === 0) return;
 
   // Draw the future path
@@ -1124,7 +1125,7 @@ function drawFuturePath() {
 
   // Draw collision indicator
   if (collisionPoint && particle.isActive) {
-    if (collisionSpeed >= COLLISION_SPEED_THRESHOLD) {
+    if (collisionSpeed >= COLLISION_SPEED_THRESHOLD && !particle.landed) {
       // Draw red "X" for high-speed collision
       ctx.fillStyle = "red";
       ctx.font = "20px Arial";
