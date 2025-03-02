@@ -179,7 +179,7 @@ const centerMass = {
   mass: 2600,
 };
 
-//Spaceship
+//Spaceship before rotation implementation
 // const particle = {
 //   x: 50,
 //   y: 20,
@@ -242,6 +242,7 @@ function drawThrust(particle) {
 }
 
 function calculateGravity() {
+
   const dx = centerMass.x - particle.x;
   const dy = centerMass.y - particle.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
@@ -258,7 +259,10 @@ function calculateGravity() {
       explodeShip(collisionSpeed, particle.vx, particle.vy);
       deleteCollisionWarningButton();
       displayResetButton();
+      
     } else {
+      deleteCollisionWarningButton();
+      displayLandingSuccessfull();
       particle.landed = true;
       particle.vx = 0;
       particle.vy = 0;
@@ -275,6 +279,8 @@ function calculateGravity() {
 
   particle.vx += force * Math.cos(angle);
   particle.vy += force * Math.sin(angle);
+
+  // particle.landed = false;
 }
 
 
@@ -572,35 +578,6 @@ function updateNextFrame() {
 }
 
 
-
-// function drawSpaceshipWithFeet(particle) {
-//   // First draw the landing feet (gray lines)
-//   ctx.beginPath();
-  
-//   // Left foot - angled line extending down and outward
-//   ctx.moveTo(particle.x - particle.radius/2, particle.y + particle.radius/2);
-//   ctx.lineTo(particle.x - particle.radius*1.4, particle.y + particle.radius*1.6);
-  
-//   // Right foot - angled line extending down and outward
-//   ctx.moveTo(particle.x + particle.radius/2, particle.y + particle.radius/2);
-//   ctx.lineTo(particle.x + particle.radius*1.4, particle.y + particle.radius*1.6);
-  
-//   // Set the feet style and draw them
-//   ctx.strokeStyle = "gray";
-//   ctx.lineWidth = 2;
-//   ctx.stroke();
-  
-//   // Then draw the main circular body with border
-//   ctx.beginPath();
-//   ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
-//   ctx.fillStyle = "blue";
-//   ctx.fill();
-  
-//   // Add the gray border around the circle
-//   ctx.strokeStyle = "gray";
-//   ctx.lineWidth = 2;
-//   ctx.stroke();
-// }
 function drawSpaceshipWithFeet(particle) {
   ctx.save(); // Save the current context state
   
@@ -1063,7 +1040,7 @@ let collisionSpeed = 0; // Store the speed at collision
 const COLLISION_SPEED_THRESHOLD = 1.5; // Tweak this value as needed
 
 function calculateFuturePath() {
-  if (!particle.isActive) return [];
+  if (!particle.isActive ) return [];
   // Backup current real state
   const backup = {
     x: particle.x,
@@ -1095,7 +1072,7 @@ function calculateFuturePath() {
     particle.y += particle.vy * dt;
 
     // Check for collision
-    if (dist < centerMass.radius + particle.radius) {
+    if (dist < centerMass.radius + particle.radius ) {
       collisionPoint = { x: particle.x, y: particle.y };
       collisionSpeed = Math.sqrt(
         particle.vx * particle.vx + particle.vy * particle.vy
@@ -1148,14 +1125,14 @@ function drawFuturePath() {
   ctx.setLineDash([]); // Reset dash
 
   // Draw collision indicator
-  if (collisionPoint && particle.isActive && !particle.landed) {
+  if (collisionPoint && particle.isActive) {
     if (collisionSpeed >= COLLISION_SPEED_THRESHOLD) {
       // Draw red "X" for high-speed collision
       ctx.fillStyle = "red";
       ctx.font = "20px Arial";
       ctx.fillText("💥", collisionPoint.x - 10, collisionPoint.y + 10);
-      document.getElementById("collisionMainDivId").style.display =
-        "flex";
+      deleteLandingSuccessfull();
+      displayCollisionWarningButton();
     } else {
       // Draw green circle for low-speed collision
 
@@ -1169,8 +1146,24 @@ function drawFuturePath() {
   }
 }
 
+function displayCollisionWarningButton(){
+  document.getElementById("collisionMainDivId").style.display =
+  "flex";
+}
+
 function deleteCollisionWarningButton() {
+ 
   document.getElementById("collisionMainDivId").style.display = "none";
+}
+
+function displayLandingSuccessfull() {
+ 
+  document.getElementById("landingSuccessMainDivId").style.display = "flex";
+}
+
+function deleteLandingSuccessfull() {
+ 
+  document.getElementById("landingSuccessMainDivId").style.display = "none";
 }
 
 /****************************************************
@@ -1280,11 +1273,11 @@ trackFrame() {
 
 function resetParticle() {
   setTimeout(() => {
-    particle.x = 100;
-    particle.y = 100;
+    // particle.x = 100;
+    // particle.y = 100;
 
-    // particle.x = canvas.width/2 + centerMass.radius-20,
-    // particle.y =  canvas.height/2 +centerMass.radius-20,
+    particle.x = canvas.width/2 + centerMass.radius-20,
+    particle.y =  canvas.height/2 +centerMass.radius-20,
 
     // particle.x = 10;
     // particle.y = 10;
@@ -1312,7 +1305,8 @@ function resetParticle() {
       missionTimer.reset();
     }
     
-
+    deleteCollisionWarningButton();
+    deleteLandingSuccessfull();
     
     hideDisplayButton();
   }, 120);
