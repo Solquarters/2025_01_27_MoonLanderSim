@@ -172,6 +172,8 @@ const trace = [];
 const MAX_TRACE_LENGTH = 300;
 let debris = [];
 
+let DEGREE_FOR_ROLL = 0;
+
 const centerMass = {
   x: canvas.width / 2,
   y: canvas.height / 2,
@@ -251,7 +253,7 @@ function calculateGravity() {
   if (  (distance < centerMass.radius + particle.radius ) )  {
     const collisionSpeed = getVelocityMaginute(particle.vx, particle.vy);
 
-    if (collisionSpeed >= COLLISION_SPEED_THRESHOLD || getRelativeShipRollToSurfaceDegrees() > 20) {
+    if (collisionSpeed >= COLLISION_SPEED_THRESHOLD || DEGREE_FOR_ROLL > 20) {
       let nadirPoint = getSurfaceInterceptPoint(dy, dx);
       particle.x = nadirPoint.x;
       particle.y = nadirPoint.y;
@@ -986,6 +988,8 @@ function getRelativeShipRollToSurfaceDegrees() {
 //     mainDisplay.classList.add('warning-blink');
 //   }
 // }
+
+
 function updateRollInHUD() {
   // Get the relative angle in degrees
   let relativeDegrees = getRelativeShipRollToSurfaceDegrees();
@@ -997,6 +1001,7 @@ function updateRollInHUD() {
   // Normalize the angle for display in the HUD text
   // We want a range of -179 to +180 degrees for the roll indicator
   let normalizedDegrees = relativeDegrees - 90; // This is our true roll value
+  DEGREE_FOR_ROLL = normalizedDegrees;
   
   // Make sure we wrap around correctly at the extremes
   while (normalizedDegrees > 180) normalizedDegrees -= 360;
