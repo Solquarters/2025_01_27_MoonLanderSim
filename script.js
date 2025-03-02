@@ -119,7 +119,7 @@ const keysPressed = {
   ArrowRight: false,
   ArrowUp: false,
   ArrowDown: false,
-  KeyS: false,  
+  s: false,  
 };
 
 document.addEventListener("keydown", (e) => {
@@ -496,7 +496,7 @@ function updateNextFrame() {
     }
     
     // Stabilize rotation if S key is pressed
-    if (keysPressed.KeyS) {
+    if (keysPressed.s) {
       if (particle.rotationVelocity > 0) {
         particle.rotationVelocity = Math.max(0, particle.rotationVelocity - particle.stabilizeStrength);
       } else if (particle.rotationVelocity < 0) {
@@ -675,7 +675,7 @@ function drawThrustIndicatorsRotated(p) {
   }
   
   // Show stabilization indicator
-  if (keysPressed.KeyS && particle.rotationVelocity !== 0) {
+  if (keysPressed.s && particle.rotationVelocity !== 0) {
     ctx.strokeStyle = `rgba(255, 255, 255, ${flickerAlpha})`; 
     ctx.beginPath();
     ctx.arc(0, 0, p.radius + 10, 0, Math.PI * 2);
