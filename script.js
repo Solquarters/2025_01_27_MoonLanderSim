@@ -172,7 +172,6 @@ const trace = [];
 const MAX_TRACE_LENGTH = 300;
 let debris = [];
 
-let DEGREE_FOR_ROLL = 0;
 
 const centerMass = {
   x: canvas.width / 2,
@@ -244,16 +243,19 @@ function drawThrust(particle) {
 }
 
 function calculateGravity() {
-
   const dx = centerMass.x - particle.x;
   const dy = centerMass.y - particle.y;
   const distance = Math.sqrt(dx * dx + dy * dy);
 
   // Check for collision
-  if (  (distance < centerMass.radius + particle.radius ) )  {
+  if (distance < centerMass.radius + particle.radius) {
     const collisionSpeed = getVelocityMaginute(particle.vx, particle.vy);
-
-    if (collisionSpeed >= COLLISION_SPEED_THRESHOLD || DEGREE_FOR_ROLL > 20) {
+    
+    // Calculate the roll angle relative to surface for landing
+    const absoluteRollDegree = Math.abs(getRelativeShipRollToSurfaceDegrees() - 90);
+    
+    // If speed is too high OR roll is too extreme, explode
+    if (collisionSpeed >= COLLISION_SPEED_THRESHOLD || absoluteRollDegree > 20) {
       let nadirPoint = getSurfaceInterceptPoint(dy, dx);
       particle.x = nadirPoint.x;
       particle.y = nadirPoint.y;
@@ -261,22 +263,20 @@ function calculateGravity() {
       explodeShip(collisionSpeed, particle.vx, particle.vy);
       deleteCollisionWarningButton();
       displayResetButton();
-      
     } else {
+      // Otherwise, successful landing
       deleteCollisionWarningButton();
       displayLandingSuccessfull();
       particle.landed = true;
       particle.vx = 0;
       particle.vy = 0;
       particle.rotationVelocity = 0;
-   
     }
     return;
   }
 
   // Original gravity calculations
-  const force =
-    (G * (centerMass.mass * particle.mass)) / (distance * distance);
+  const force = (G * (centerMass.mass * particle.mass)) / (distance * distance);
   const angle = Math.atan2(dy, dx);
 
   particle.vx += force * Math.cos(angle);
@@ -990,18 +990,61 @@ function getRelativeShipRollToSurfaceDegrees() {
 // }
 
 
+// function updateRollInHUD() {
+//   // Get the relative angle in degrees
+//   let relativeDegrees = getRelativeShipRollToSurfaceDegrees();
+  
+//   // Calculate the display angle for the visual indicator
+//   const displayAngle = relativeDegrees + 90;
+//   const rollError = Math.abs(relativeDegrees - 90);
+  
+//   // Normalize the angle for display in the HUD text
+//   // We want a range of -179 to +180 degrees for the roll indicator
+//   let normalizedDegrees = relativeDegrees - 90; // This is our true roll value
+//   DEGREE_FOR_ROLL = normalizedDegrees;
+  
+//   // Make sure we wrap around correctly at the extremes
+//   while (normalizedDegrees > 180) normalizedDegrees -= 360;
+//   while (normalizedDegrees <= -180) normalizedDegrees += 360;
+  
+//   // Update the rotation display (visual indicator)
+//   document.getElementById('rollIndicatorRotatorId').style.transform = `rotate(${displayAngle}deg)`;
+  
+//   // Update the text display with normalized degrees
+//   document.getElementById('rollNumbericId').textContent = normalizedDegrees;
+  
+//   // Get the elements that contain the pseudo-elements
+//   const halfCircle = document.querySelector('.half-circle-clip');
+//   const mainDisplay = document.querySelector('.mainFDAIDisplayContainerClass');
+  
+//   // First remove all possible classes to avoid conflicts
+//   halfCircle.classList.remove('warning-blink', 'green-pulse');
+//   mainDisplay.classList.remove('warning-blink', 'green-pulse');
+  
+//   // Now add the appropriate class based on the roll error
+//   if (rollError <= 20) {
+//     // Within 20 degrees - show green pulse
+//     halfCircle.classList.add('green-pulse');
+//     mainDisplay.classList.add('green-pulse');
+//   } else {
+//     // More than 20 degrees off - show red warning blink
+//     halfCircle.classList.add('warning-blink');
+//     mainDisplay.classList.add('warning-blink');
+//   }
+// }
 function updateRollInHUD() {
-  // Get the relative angle in degrees
+  // Get the relative angle in degrees between the ship and the surface
   let relativeDegrees = getRelativeShipRollToSurfaceDegrees();
   
   // Calculate the display angle for the visual indicator
   const displayAngle = relativeDegrees + 90;
+  
+  // Calculate the "roll error" - how far from vertical (90 degrees to surface) the ship is
+  // This is what we'll use to determine if landing is safe
   const rollError = Math.abs(relativeDegrees - 90);
   
-  // Normalize the angle for display in the HUD text
-  // We want a range of -179 to +180 degrees for the roll indicator
-  let normalizedDegrees = relativeDegrees - 90; // This is our true roll value
-  DEGREE_FOR_ROLL = normalizedDegrees;
+  // Normalize the angle for display in the HUD text (-179 to +180 range)
+  let normalizedDegrees = relativeDegrees - 90;
   
   // Make sure we wrap around correctly at the extremes
   while (normalizedDegrees > 180) normalizedDegrees -= 360;
@@ -1031,6 +1074,9 @@ function updateRollInHUD() {
     halfCircle.classList.add('warning-blink');
     mainDisplay.classList.add('warning-blink');
   }
+  
+  // We don't need to store this in a global variable anymore since we'll calculate
+  // it directly in calculateGravity when needed
 }
 
 
