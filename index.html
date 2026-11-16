@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Moon Lander</title>
@@ -9,31 +9,21 @@
       href="./img/icons8-lander-topaz-16.png"
     />
     <link rel="stylesheet" href="style.css" />
+    <script type="module" src="./js/main.js"></script>
   </head>
   <body>
-    <!-- ToDos...
-
-    1. Delta Time für gleiche Frame Rate auf allen systemen
-    2. responsiveness...
-    3. Aufgaben - Orbit+land an x
-    4. Time SLider wie in Cerbal Space Programm (Delta Time scaling)
-
-    Oxygen Ran out message
-    Fuel Ran out message+logic
-
-    Aufzeichnen der Flugroute! Dann darstellen mit D3 oder anderen einfacheren Mitteln
-    (Replay - landing with style)
-
-    Audio: Ambience, Thrust, Explosion, 
-
-    zeitlicher verlauf von geschwindigkeit als x y graph anzeigen...  
-
-    Mondphasen
-
-  -->
-
+    <noscript>This simulation needs JavaScript.</noscript>
+    <script>
+      // ES modules are blocked on file:// URLs, so explain instead of showing a dead page.
+      if (location.protocol === 'file:') {
+        document.body.insertAdjacentHTML(
+          'afterbegin',
+          '<p class="startupHintClass">Please start the simulation through a web server: run <code>npm start</code> in the project folder and open the printed address.</p>'
+        );
+      }
+    </script>
    <!-- MAIN HUD START -->
-    <div id="mainHUDId" onclick="">
+    <div id="mainHUDId">
       <div class="oxygenMainDivClass">
         <div class="oxygenAmountDivClass" id="oxygenAmountDivId">
           <span class="hudLabelClass">O²</span>
@@ -48,11 +38,10 @@
       <!-- Analog Button START -->
       <button
         class="button-14 signalParentWrapperDivClass"
-        role="button"
+        type="button"
         id="resetButtonMainDivId"
-        onclick="resetParticle()"
       >
-        <div class="button-14-top text">[SPACE] TO RESUME SIMULATION</div>
+        <div class="button-14-top text">[SPACE] TO RESTART SIMULATION</div>
         <div class="button-14-bottom"></div>
         <div class="button-14-base"></div>
       </button>
@@ -60,6 +49,10 @@
 
       <div class="bottomCenterMessageClass" id="collisionMainDivId">
         <div class="collisionWrapperDiv">ON COLLISION COURSE</div>
+      </div>
+
+      <div class="bottomCenterMessageClass" id="oxygenDepletedMainDivId">
+        <div class="collisionWrapperDiv">OXYGEN DEPLETED</div>
       </div>
 
       <div class="bottomCenterMessageClass" id="landingSuccessMainDivId">
@@ -231,5 +224,4 @@
       <canvas id="gravityCanvas" width="1200" height="800"></canvas>
     </div>
   </body>
-  <script src="./script.js"></script>
 </html>

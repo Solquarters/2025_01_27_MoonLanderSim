@@ -1,0 +1,11 @@
+{
+  "name": "moon-lander-sim",
+  "version": "2.0.0",
+  "description": "A moon lander simulation in vanilla JavaScript and Canvas 2D.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node tools/dev-server.mjs",
+    "test": "node --test"
+  }
+}

@@ -5,7 +5,7 @@
   font-family: "Anta";
   font-style: normal;
   font-weight: 400;
-  src: url("../fonts/anta-v1-latin-regular.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+  src: url("./fonts/anta-v1-latin-regular.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
 @font-face {
@@ -13,7 +13,7 @@
   font-family: "DSEG7Modern";
   font-style: normal;
   font-weight: 400;
-  src: url("../fonts/DSEG7Modern-BoldItalic.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+  src: url("./fonts/DSEG7Modern-BoldItalic.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 /* Remove any background-image to avoid extra overhead */
 body {
@@ -154,7 +154,8 @@ body {
     rgba(0, 255, 0, 1) 100%
   );
 }
-#collisionMainDivId {
+#collisionMainDivId,
+#oxygenDepletedMainDivId {
 
   display: none;
 
@@ -655,6 +656,17 @@ color: rgb(54, 54, 54);
 #altitudeNumbericId{
   margin-top: 2px;
   transition: all 400ms ease-in-out;
+}
+#altitudeNumbericId.is-low{
+  color: rgb(0, 255, 0);
+}
+
+.startupHintClass{
+  position: relative;
+  z-index: 20;
+  margin: 16px;
+  color: white;
+  font-size: 18px;
 }
 
 
