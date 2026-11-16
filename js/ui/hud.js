@@ -1,5 +1,6 @@
 import { LANDING } from '../config.js';
 import { formatMissionTime, formatSpeed } from './format.js';
+import { formatCombo, formatScore } from './missionText.js';
 
 const VELOCITY_TAPE = Object.freeze({ unitsPerStep: 1, maxValue: 6 });
 const ALTITUDE_TAPE = Object.freeze({ unitsPerStep: 100, maxValue: 600 });
@@ -72,7 +73,17 @@ class Tape {
  * @property {boolean} collisionWarning
  * @property {boolean} landed
  * @property {boolean} oxygenDepleted
- * @property {boolean} canRestart        show the restart prompt
+ * @property {MissionView} mission
+ */
+
+/**
+ * @typedef {Object} MissionView
+ * @property {string} levelName
+ * @property {string} objective           what to do right now
+ * @property {number} score
+ * @property {number} combo               gate chain multiplier, 1 = no chain
+ * @property {number} comboTimeLeft       share of the combo window left (0..1)
+ * @property {{text: string, tone: string}|null} alert
  */
 
 /** All instruments and status messages that live in the DOM. */
@@ -95,8 +106,14 @@ export class Hud {
       collisionWarning: requireElement('#collisionMainDivId'),
       landingSuccess: requireElement('#landingSuccessMainDivId'),
       oxygenDepleted: requireElement('#oxygenDepletedMainDivId'),
-      restartButton: requireElement('#resetButtonMainDivId'),
-      missionsPanel: requireElement('#squareborderWrapper'),
+      levelName: requireElement('#missionNameId'),
+      objective: requireElement('#missionObjectiveId'),
+      score: requireElement('#missionScoreId'),
+      combo: requireElement('#missionComboId'),
+      comboValue: requireElement('#missionComboValueId'),
+      comboBar: requireElement('#missionComboBarId'),
+      alert: requireElement('#missionAlertId'),
+      menuButton: requireElement('#missionMenuButtonId'),
     };
 
     this.#velocityTape = new Tape(
@@ -116,19 +133,11 @@ export class Hud {
       this.#velocityTape.measure();
       this.#altitudeTape.measure();
     });
-    this.#el.missionsPanel.addEventListener('click', () => {
-      this.#el.missionsPanel.classList.toggle('active');
-    });
   }
 
   /** @param {() => void} handler */
-  onRestartRequested(handler) {
-    this.#el.restartButton.addEventListener('click', handler);
-  }
-
-  /** Mirrors a held Space key on the restart button. */
-  setRestartPressed(pressed) {
-    this.#el.restartButton.classList.toggle('space-active', pressed);
+  onMenuRequested(handler) {
+    this.#el.menuButton.addEventListener('click', handler);
   }
 
   /** @param {HudView} view */
@@ -150,7 +159,26 @@ export class Hud {
     setVisible(el.collisionWarning, view.collisionWarning);
     setVisible(el.landingSuccess, view.landed);
     setVisible(el.oxygenDepleted, view.oxygenDepleted);
-    setVisible(el.restartButton, view.canRestart);
+    this.#showMission(view.mission);
+  }
+
+  /** @param {MissionView} mission */
+  #showMission(mission) {
+    const el = this.#el;
+    setText(el.levelName, mission.levelName);
+    setText(el.objective, mission.objective);
+    setText(el.score, formatScore(mission.score));
+
+    const chaining = mission.combo > 1;
+    el.combo.classList.toggle('is-active', chaining);
+    if (chaining) {
+      setText(el.comboValue, formatCombo(mission.combo));
+      el.comboBar.style.width = `${Math.round(mission.comboTimeLeft * 100)}%`;
+    }
+
+    setText(el.alert, mission.alert?.text ?? '');
+    el.alert.dataset.tone = mission.alert?.tone ?? '';
+    el.alert.classList.toggle('is-visible', mission.alert !== null);
   }
 
   #showAttitude(tiltDeg) {

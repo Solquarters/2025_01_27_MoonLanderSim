@@ -22,6 +22,7 @@ const releasedControls = () => ({
 export class Keyboard {
   #controls = releasedControls();
   #actions = new Map();
+  #enabled = true;
 
   /** @param {EventTarget} target */
   constructor(target = window) {
@@ -29,6 +30,12 @@ export class Keyboard {
     target.addEventListener('keyup', (event) => this.#onKeyUp(event));
     // Keys released while the window is unfocused never send keyup.
     target.addEventListener('blur', () => this.releaseAll());
+  }
+
+  /** While disabled (e.g. a dialog is open) keys are left to the browser. */
+  set enabled(enabled) {
+    this.#enabled = enabled;
+    if (!enabled) this.releaseAll();
   }
 
   /** Current state of the held controls. */
@@ -50,7 +57,7 @@ export class Keyboard {
   }
 
   #onKeyDown(event) {
-    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (!this.#enabled || event.ctrlKey || event.metaKey || event.altKey) return;
 
     const control = HELD_BINDINGS[event.code];
     if (control) {
@@ -67,6 +74,7 @@ export class Keyboard {
   }
 
   #onKeyUp(event) {
+    if (!this.#enabled) return;
     const control = HELD_BINDINGS[event.code];
     if (control) {
       this.#controls[control] = false;

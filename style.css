@@ -910,3 +910,226 @@ Warning blink when Roll is over threshhold */
     }
   }
   
+
+/* ///MISSION PANEL: level, objective, score, combo/// */
+
+.missionPanelClass {
+  position: absolute;
+  top: 12px;
+  left: calc(50% - 210px);
+  width: 420px;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.829);
+  border-radius: 4px;
+  background-color: rgba(0, 3, 51, 0.85);
+  color: white;
+  font-size: 14px;
+}
+.missionHeaderClass,
+.missionScoreRowClass {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.missionObjectiveClass {
+  margin: 4px 0;
+  font-size: 20px;
+  color: rgb(81, 255, 0);
+}
+#missionScoreId {
+  font-family: "DSEG7Modern";
+  color: rgb(81, 255, 0);
+}
+.missionComboClass {
+  visibility: hidden;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgb(255, 208, 0);
+}
+.missionComboClass.is-active {
+  visibility: visible;
+}
+.comboTrackClass {
+  display: inline-block;
+  width: 60px;
+  height: 6px;
+  border: 1px solid rgb(255, 208, 0);
+}
+#missionComboBarId {
+  display: block;
+  height: 100%;
+  background-color: rgb(255, 208, 0);
+}
+.missionHintClass {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+}
+.hudButtonClass {
+  font: inherit;
+  font-size: 12px;
+  color: white;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.hudButtonClass:hover,
+.hudButtonClass:focus-visible {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.missionAlertClass {
+  position: absolute;
+  top: 24%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  font-size: 22px;
+  white-space: nowrap;
+  visibility: hidden;
+}
+.missionAlertClass.is-visible {
+  visibility: visible;
+}
+.missionAlertClass[data-tone="warn"] {
+  color: rgb(255, 80, 60);
+}
+.missionAlertClass[data-tone="good"] {
+  color: rgb(255, 208, 0);
+}
+
+/* ///SCREENS: mission select, briefing, result/// */
+
+.screenClass {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  box-sizing: border-box;
+  padding: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.829);
+  border-radius: 6px;
+  background-color: #000333;
+  color: white;
+  font-family: "Anta";
+  font-size: 16px;
+  line-height: 1.4;
+}
+.screenClass::backdrop {
+  background-color: rgba(0, 0, 0, 0.65);
+}
+.screenClass h2 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+.screenClass h3 {
+  margin: 16px 0 4px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.screenClass ol {
+  margin: 0;
+}
+.screenKickerClass {
+  margin: 0;
+  color: rgb(81, 255, 0);
+}
+.screenMetaClass {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+.screenTipClass {
+  padding: 8px 12px;
+  border-left: 3px solid rgb(255, 208, 0);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.screenActionsClass {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+.screenClass button {
+  font: inherit;
+  color: white;
+  background-color: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.screenClass button:hover:not(:disabled),
+.screenClass button:focus-visible {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: white;
+}
+.screenClass button.primaryButtonClass {
+  background-color: rgb(0, 107, 5);
+  border-color: rgb(0, 231, 12);
+}
+.screenClass button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.screenClass [hidden] {
+  display: none;
+}
+
+.levelListClass {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.screenClass button.levelCardClass {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.levelNumberClass {
+  font-family: "DSEG7Modern";
+  color: rgb(81, 255, 0);
+}
+.levelStatusClass {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.starsClass {
+  color: rgb(255, 208, 0);
+  letter-spacing: 2px;
+}
+
+.resultStarsClass {
+  font-size: 40px;
+  text-align: center;
+}
+.resultTableClass {
+  width: 100%;
+  border-collapse: collapse;
+}
+.resultTableClass th {
+  text-align: left;
+  font-weight: 400;
+}
+.resultTableClass td {
+  text-align: right;
+}
+.resultTableClass tfoot th,
+.resultTableClass tfoot td {
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  font-size: 22px;
+  color: rgb(81, 255, 0);
+}
+#resultDialog.is-failure h2 {
+  color: rgb(255, 80, 60);
+}

@@ -117,3 +117,24 @@ export function predictTrajectory(body, attractor, maxSteps) {
   }
   return { points, impact: null };
 }
+
+/** Compass bearing of the body as seen from the attractor: 0° = top of the screen, clockwise, [0, 360). */
+export function bearingOf(body, attractor) {
+  const degrees = toDegrees(Math.atan2(body.x - attractor.x, -(body.y - attractor.y)));
+  return (degrees + 360) % 360;
+}
+
+/** Point at the given compass bearing and distance from the attractor's centre. */
+export function pointAtBearing(attractor, bearingDeg, distance) {
+  const angle = toRadians(bearingDeg);
+  return {
+    x: attractor.x + Math.sin(angle) * distance,
+    y: attractor.y - Math.cos(angle) * distance,
+  };
+}
+
+/** Shortest signed turn from one bearing to another in degrees, in (-180, 180]. */
+export function bearingDelta(fromDeg, toDeg) {
+  const delta = (((toDeg - fromDeg) % 360) + 540) % 360 - 180;
+  return delta === -180 ? 180 : delta;
+}

@@ -66,19 +66,20 @@ const NO_THRUSTERS = Object.freeze({
 export class Simulation {
   /**
    * @param {Object} [options]
-   * @param {Partial<typeof DEFAULT_SPAWN>} [options.spawn]
+   * @param {Partial<typeof DEFAULT_SPAWN> & {landed?: boolean}} [options.spawn]  `landed: true` starts on the ground
    * @param {number} [options.fuel]     starting fuel in percent
    * @param {number} [options.oxygen]   starting oxygen in percent
    * @param {() => number} [options.random]
    */
   constructor({ spawn = {}, fuel = SUPPLIES.fuel, oxygen = SUPPLIES.oxygen, random = Math.random } = {}) {
+    const { landed = false, ...startState } = spawn;
     this.moon = MOON;
     this.ship = {
       ...DEFAULT_SPAWN,
-      ...spawn,
+      ...startState,
       radius: SHIP.radius,
       mass: SHIP.mass,
-      status: ShipStatus.FLYING,
+      status: landed ? ShipStatus.LANDED : ShipStatus.FLYING,
     };
     this.fuel = fuel;
     this.oxygen = oxygen;
@@ -105,6 +106,16 @@ export class Simulation {
   /** True while the crew can still fly the ship. */
   get isShipOperational() {
     return this.isFlying || this.isLanded;
+  }
+
+  /** Sets the ship spinning, e.g. for a simulated gyro failure. Has no effect on the ground. */
+  kickRotation(rotationVelocity) {
+    if (!this.isFlying) return;
+    this.ship.rotationVelocity = clamp(
+      rotationVelocity,
+      -SHIP.maxRotationVelocity,
+      SHIP.maxRotationVelocity
+    );
   }
 
   /**

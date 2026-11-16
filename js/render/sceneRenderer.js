@@ -26,19 +26,24 @@ export class SceneRenderer {
   /**
    * @param {import('../sim/simulation.js').Simulation} sim
    * @param {{points: {x:number,y:number}[], impact: object|null}|null} trajectory
+   * @param {Object} [layers] extra drawing passes supplied by the caller
+   * @param {(ctx: CanvasRenderingContext2D) => void} [layers.belowShip]
+   * @param {(ctx: CanvasRenderingContext2D) => void} [layers.aboveAll]
    */
-  draw(sim, trajectory) {
+  draw(sim, trajectory, { belowShip, aboveAll } = {}) {
     const ctx = this.#ctx;
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
     this.#drawTrace(sim.trace);
     this.#drawMoon(sim.moon);
     if (trajectory) this.#drawTrajectory(trajectory);
+    belowShip?.(ctx);
     if (sim.ship.status !== ShipStatus.DESTROYED) {
       this.#drawShip(sim.ship);
       this.#drawThrusterFlames(sim.ship, sim.thrusters);
     }
     this.#drawDebris(sim.debris);
+    aboveAll?.(ctx);
   }
 
   #drawMoon(moon) {

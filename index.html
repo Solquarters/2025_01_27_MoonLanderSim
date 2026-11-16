@@ -35,17 +35,23 @@
         </div>
       </div>
 
-      <!-- Analog Button START -->
-      <button
-        class="button-14 signalParentWrapperDivClass"
-        type="button"
-        id="resetButtonMainDivId"
-      >
-        <div class="button-14-top text">[SPACE] TO RESTART SIMULATION</div>
-        <div class="button-14-bottom"></div>
-        <div class="button-14-base"></div>
-      </button>
-      <!-- Analog Button END -->
+      <section class="missionPanelClass" aria-label="Mission status">
+        <div class="missionHeaderClass">
+          <span id="missionNameId"></span>
+          <button type="button" class="hudButtonClass" id="missionMenuButtonId">Missions [Esc]</button>
+        </div>
+        <div class="missionObjectiveClass" id="missionObjectiveId"></div>
+        <div class="missionScoreRowClass">
+          <span>SCORE <span id="missionScoreId">0</span></span>
+          <span class="missionComboClass" id="missionComboId">
+            COMBO <span id="missionComboValueId"></span>
+            <span class="comboTrackClass"><span id="missionComboBarId"></span></span>
+          </span>
+          <span class="missionHintClass">[Space] restart</span>
+        </div>
+      </section>
+
+      <div class="missionAlertClass" id="missionAlertId" role="status" aria-live="polite"></div>
 
       <div class="bottomCenterMessageClass" id="collisionMainDivId">
         <div class="collisionWrapperDiv">ON COLLISION COURSE</div>
@@ -103,23 +109,6 @@
       </div>
       <span class="velocityLabel">Velocity</span>
       </div>
-
-      <div class="trainingObjectivesMainDivClass" id="squareborderWrapper">
-        <span>
-          <div>1. Land at Russel Crater before Oxygen is below 50% or fuel runs below 10%.</div>
-          <div>2. Orbit once and fly to corridor.</div>
-          <div>3. Land and take off and land again at X positions.</div>
-          <div>4. Orbit at lowest possible altitude in X time</div>
-          <div>
-            5. Perform a swing-by, reach X speed + hit a corridor with
-            X fuel.
-          </div>
-          <br>
-          <div>Visit moonlander.roman-kabucov.de for easier first version.</div>
-        </span>
-      </div>
-
-
 
       <div id="altitudeMainDivId">
         <div id="altViewportId"></div>
@@ -223,5 +212,52 @@
       <!-- 3) Gravity simulation canvas on top -->
       <canvas id="gravityCanvas" width="1200" height="800"></canvas>
     </div>
+    <dialog class="screenClass" id="levelSelectDialog" aria-labelledby="levelSelectTitle">
+      <h2 id="levelSelectTitle">Select mission</h2>
+      <p class="screenMetaClass" id="rankSummary"></p>
+      <ol class="levelListClass" id="levelList"></ol>
+      <div class="screenActionsClass">
+        <button type="button" id="levelSelectClose">Back to flight</button>
+      </div>
+    </dialog>
+
+    <dialog class="screenClass" id="briefingDialog" aria-labelledby="briefingTitle">
+      <p class="screenKickerClass" id="briefingKicker"></p>
+      <h2 id="briefingTitle"></h2>
+      <p id="briefingText"></p>
+      <h3>Objectives</h3>
+      <ol id="briefingObjectives"></ol>
+      <p class="screenTipClass" id="briefingTip"></p>
+      <p class="screenMetaClass" id="briefingBest"></p>
+      <p class="screenMetaClass">
+        Arrow Up: engine · Arrow Down: retro engine · Arrow Left/Right: rotate · S: stabilize
+      </p>
+      <div class="screenActionsClass">
+        <button type="button" id="briefingBack">Missions</button>
+        <button type="button" class="primaryButtonClass" id="briefingStart">Launch</button>
+      </div>
+    </dialog>
+
+    <dialog class="screenClass" id="resultDialog" aria-labelledby="resultTitle">
+      <p class="screenKickerClass" id="resultKicker"></p>
+      <h2 id="resultTitle"></h2>
+      <p id="resultDetail"></p>
+      <div class="resultStarsClass" id="resultStars"></div>
+      <table class="resultTableClass">
+        <tbody id="resultBreakdown"></tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Total</th>
+            <td id="resultTotal"></td>
+          </tr>
+        </tfoot>
+      </table>
+      <p class="screenMetaClass" id="resultBest"></p>
+      <div class="screenActionsClass">
+        <button type="button" id="resultLevels">Missions</button>
+        <button type="button" id="resultRetry">Retry [R]</button>
+        <button type="button" class="primaryButtonClass" id="resultNext">Next mission</button>
+      </div>
+    </dialog>
   </body>
 </html>
