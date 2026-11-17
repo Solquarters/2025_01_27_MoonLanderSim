@@ -1,1135 +1,904 @@
+/* ==========================================================================
+   Moon Lander styles
 
-/* anta-regular - latin */
+   1. Fonts and design tokens
+   2. Base and helpers
+   3. Stage layout (top bar, side bars, world)
+   4. Top bar: readouts, mission panel, actions
+   5. Instruments: tapes, gauges, attitude
+   6. In-world messages
+   7. Screens (dialogs) and buttons
+   8. Touch controls
+   9. Small screens and motion preferences
+   ========================================================================== */
+
+/* 1. Fonts and design tokens ---------------------------------------------- */
+
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-display: swap;
   font-family: "Anta";
   font-style: normal;
   font-weight: 400;
-  src: url("./fonts/anta-v1-latin-regular.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+  src: url("./fonts/anta-v1-latin-regular.woff2") format("woff2");
 }
 
 @font-face {
-  font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+  font-display: swap;
   font-family: "DSEG7Modern";
   font-style: normal;
   font-weight: 400;
-  src: url("./fonts/DSEG7Modern-BoldItalic.woff2") format("woff2"); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+  src: url("./fonts/DSEG7Modern-BoldItalic.woff2") format("woff2");
 }
-/* Remove any background-image to avoid extra overhead */
+
+:root {
+  --color-space: #000;
+  --color-panel: #000333;
+  --color-panel-raised: #0a0f4d;
+  --color-border: rgba(255, 255, 255, 0.83);
+  --color-border-dim: rgba(255, 255, 255, 0.35);
+  --color-text: #fff;
+  --color-text-dim: rgba(255, 255, 255, 0.72);
+  --color-accent: #51ff00; /* phosphor green of the readouts */
+  --color-good: #00e70c;
+  --color-good-dark: #006b05;
+  --color-warn: #ffb800;
+  --color-danger: #ff5a47;
+  --color-danger-strong: #ff0000;
+  --color-gold: #ffd000;
+  --color-focus: #00e5ff;
+
+  --font-ui: "Anta", system-ui, sans-serif;
+  --font-digits: "DSEG7Modern", ui-monospace, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+
+  --radius: 4px;
+  --border: 2px solid var(--color-border);
+
+  /* Stage geometry; the world size must match WORLD in js/config.js. */
+  --world-width: 1200px;
+  --world-height: 800px;
+  --side-width: 140px;
+  --top-bar-height: 80px;
+}
+
+/* 2. Base and helpers ----------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
 body {
-  font-family: "Anta";
+  height: 100%;
+}
+
+body {
   margin: 0;
-  padding: 0;
-  background: #000;
-  overflow: hidden; /* If you don't want scrollbars */
-}
-.canvas-container {
-  position: relative;
-  width: 1200px;
-  height: 800px;
-  margin: 10px auto; /* center container if you like */
-  border: 1px solid #ccc;
-}
-/* Stacking canvases: starryBg at the bottom, flickerCanvas in the middle, gravityCanvas on top */
-#starryBg,
-#flickerCanvas,
-#gravityCanvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 1200px;
-  height: 800px;
-  display: block;
-}
-
-#gravityCanvas {
-  z-index: 2;
-}
-#flickerCanvas {
-  z-index: 1;
-}
-#starryBg {
-  z-index: 0;
-}
-
-#mainHUDId {
- 
-  user-select: none;
-  position: absolute;
-  z-index: 10;
-  width: 100%;
-  height: 100%;
-}
-
-
-#velocityMainDivId {
-  background-color: black;
-  height: 50vh;
-  min-height: 300px;
-  position: absolute;
-  top: 25%;
-  left: 5%;
-  border: 2px solid rgba(255, 255, 255, 0.829);
-  border-radius: 4px;
-  width: 48px;
-  /* overflow: hidden; */
-}
-#velocityStepsDivId {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: white;
-  position: relative;
-  transition: all 50ms ease-in-out;
-
-  bottom: 0;
-  transform: translateY(0);
-}
-.seperator {
-  width: 50%;
-  height: 2px;
-  background-color: white;
-  display: flex;
-}
-.seperator2 {
-  border: none;
-  width: 100%;
-  height: 2px;
-  background-color: rgba(255, 184, 0, 1);
-  display: flex;
-  justify-content: center;
-}
-.seperator3 {
-  border: none;
-  width: 100%;
-  background-color: rgb(255, 0, 0);
-  display: flex;
-  justify-content: center;
-}
-#velIndicatorId {
-  z-index: 9;
-  position: absolute;
-  top: calc(50% - 16px);
-  border-top: 2px solid white;
-  border-bottom: 2px solid white;
-  background-color: rgba(248, 255, 206, 0.384);
-  width: 100%;
-  height: 32px;
-}
-.single-speed-div-class {
-  height: 15vh;
-  min-height: 50px;
-  width: 100%;
-  /* height: 128px; */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-}
-
-.orange-gradient-class {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 184, 0, 1) 0%,
-    rgb(153, 92, 0) 50%,
-    rgb(0, 0, 0) 100%
-  );
-}
-.orange-red-gradient-class {
-  background: linear-gradient(
-    -180deg,
-    rgb(255, 0, 0) 0%,
-    rgba(255, 184, 0, 1) 100%
-  );
-}
-.red-class {
-  background-color: red;
-}
-.green-class {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 1) 0%,
-    rgba(0, 255, 0, 1) 100%,
-    rgba(0, 255, 0, 1) 100%
-  );
-}
-#collisionMainDivId,
-#oxygenDepletedMainDivId {
-
-  display: none;
-
-  animation: warningBlink 1s step-end infinite;
-}
-
-#landingSuccessMainDivId {
-
-  display: none;
-  animation: successMessage 3s ease-in-out infinite;
-  
-}
-.bottomCenterMessageClass{
-  position: absolute;
-  bottom: 2%;
-  left: calc(50% - 150px);
-  border: 4px solid rgba(255, 255, 255, 0.829);
-  border-radius: 4px;
-  height: 48px;
-  width: 300px;
   overflow: hidden;
-  color: white;
-  font-size: 24px;
-  font-weight: 1000;
-  justify-content: center;
-  align-items: center;
-  background-color: #000333;
-
-}
-
-.signalParentWrapperDivClass {
-    user-select: none;
-  position: absolute;
-  top: 3%;
-  left: calc(50% - 150px);
-  border: 4px solid rgba(255, 255, 255, 0.829);
-  border-radius: 4px;
-  height: 48px;
-  overflow: hidden;
-  color: white;
-  font-size: 24px;
-  font-weight: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #000333;
-  
-}
-
-.collisionWrapperDiv {
-  width: calc(100%);
-  height: calc(100% - 10px);
-  margin: 4px;
-  border-radius: 2px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: radial-gradient(
-    circle,
-    rgba(255, 162, 0, 1) 25%,
-    rgba(255, 0, 0, 1) 100%
-  );
-}
-
-.LandingSuccessWrapperDiv {
-  width: calc(100%);
-  height: calc(100% - 10px);
-  margin: 4px;
-  border-radius: 2px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: radial-gradient(
-    circle,
-    rgb(0, 231, 12) 25%,
-    rgb(0, 107, 5) 100%
-  );
-}
-
-.greenSignalWrapperDiv {
-  background: radial-gradient(rgba(9, 255, 0, 1), rgb(4, 107, 0));
-}
-
-
-#resetButtonMainDivId {
-  display: none;
-  text-align: center;
-}
-
-.oxygenMainDivClass {
-  position: absolute;
-  top: calc(20%);
-  right: 5%;
-  border: 2px solid rgba(255, 255, 255, 0.829);
-  border-radius: 4px;
-  height: 30%;
-  width: 24px;
-  /* overflow: hidden; */
-
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.fuelMainDivClass {
-  position: absolute;
-  top: calc(20% );
-  right: 2.5%;
-  border: 2px solid rgba(255, 255, 255, 0.829);
-  border-radius: 4px;
-  height: 30%;
-  width: 24px;
-  /* overflow: hidden; */
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-.fuelAmountDivClass {
-  background: radial-gradient(rgb(255, 255, 255) 1%, rgb(0, 0, 0) 85%);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  color: white;
-  border-top: 1px solid rgb(65, 65, 65);
-  position: relative;
-}
-.oxygenAmountDivClass {
-  /* background: linear-gradient(to bottom, rgb(9, 255, 0, 1) 40%, rgb(255, 0, 0)); */
-
-  background: radial-gradient(rgb(0, 217, 255) 1%,rgb(0, 0, 0) 85%);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  color: white;
-  position: relative;
-}
-#oxygenAmountDivId {
-  height: 80%;
-  border-top: 1px solid rgb(0, 78, 72);
-  transition: height 200ms ease-in-out;
-  width: 20px;
-}
-#fuelAmountDivId {
-  height: 80%;
-  transition: height 200ms ease-in-out;
-  width: 20px;
-}
-.hudLabelClass{
-  position: relative;
-  bottom: -24px;
-  font-size: 16px;
-  color: white;
-}
-
-.missionTimerMainDivClass {
-  color: rgb(81, 255, 0);
-}
-#missionTimerId {
-  font-family: "DSEG7Modern";
-}
-
-#velocityInfoId {
-  color: rgb(81, 255, 0);
-  font-family: "DSEG7Modern";
-}
-.velocityrMainDivClass {
-  color: rgb(81, 255, 0);
-}
-
-.guidanceComputerInterfaceMainDivClass {
-  pointer-events: none;
-  user-select: none;
-  padding: 8px 16px;
-  display: flex;
-  gap: 32px;
-}
-.trainingObjectivesMainDivClass{
-    border-top: 1px solid #ffffff71;
-    border-bottom: 1px solid #ffffff71;
-display: flex;
-color: rgb(54, 54, 54);
-
-
-}
-
-
-
-
-.trainingObjectivesMainDivClass {
-    position: fixed;
-    bottom: 2%;
-    left: 8px;
-    z-index: 100;
-    cursor: pointer;
-    transition: all 0.1s ease;
-}
-
-/* Headline with geometric background */
-#squareborderWrapper {
-    /* background: linear-gradient(-85deg, #000f97 80%, #00000000 100%); */
-    background: linear-gradient(-85deg, #000000 95%, #00000000 100%);
-    clip-path: polygon(0 0, 100% 0, 90% 100%, 0 100%);
-    padding: 16px 16px 8px 16px;
-    color: #797979;
-    font-size: 1.2em;
-  
-    border-right:none ;
-    border-left:none ;
-}
-
-#squareborderWrapper::before {
-    content: "Missions";
-    display: block;
-    position: relative; 
-    left: 32px;
-    transform: skew(-20deg);
-    
-}
-/* Objectives list - hidden by default */
-#squareborderWrapper span {
-   
-    margin-top: 32px;
-    display: block;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in;
-    /* padding-left: 30px; */
-    position: relative;
-    padding: 0px 0px 0px 0px;
-    right: 54px;
-    transform: none;
-    transform: skew(-20deg);
-}
-
-/* Visible state */
-#squareborderWrapper.active span {
-    
-    max-height: 500px; /* Adjust based on content */
-}
-
-/* Number indicators */
-#squareborderWrapper span br + br::before {
-    content: counter(mission-counter);
-    counter-increment: mission-counter;
-    display: inline-block;
-    width: 25px;
-    height: 25px;
-    background: #09ff00;
-    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-    text-align: center;
-    margin-right: 10px;
-    line-height: 25px;
-    font-size: 0.8em;
-    color: #000;
-    
-}
-
-
-
-#squareborderWrapper::after {
- 
-    content: "▼";
-    position: absolute;
-    left: 24px;
-    top: 16px;
-    font-size: 0.8em;
-    transition: transform 0.3s ease;
-}
-
-#squareborderWrapper.active::after {
-    transform: rotate(90deg);
-}
-
-
-
-
-
-
-
-
-
-
-
-/* ANALOG BUTTON START */
-.button-14-base {
-    position: absolute;
-    z-index: -2;
-    top: 5px;
-    left: 0;
-    border-radius: 10px;
-    width: 99%;
-    height: calc(100% - 4px);
-    background-color: rgb(19, 19, 19);
-    box-shadow: 0 1px 1px 0 rgba(255, 255, 255, .75), inset 0 2px 2px rgba(0, 0, 0, .25);
-  }
-
-
-.button-14 {
-    touch-action: manipulation;
-    -webkit-appearance: none;
-    appearance: none;
-    position: relative;
-    border-width: 0;
-    padding: 0 8px 12px;
-    min-width: 10em;
-    box-sizing: border-box;
-    background: transparent;
-    font: inherit;
-    cursor: pointer;
-    
-  }
-  
-  .button-14-top {
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 0;
-    padding: 8px 16px;
-    transform: translateY(0);
-    text-align: center;
-    color: #ffffff;
-    text-shadow: 0.5px 1.5px rgba(53, 53, 53, 0.575);
-    transition-property: transform;
-    transition-duration: 60ms;
-    -webkit-user-select: none;
-    user-select: none;
-    animation: smoothPulse 2s ease-out infinite;
-    font-weight: 600;
-  }
-  
-  .button-14:active .button-14-top {
-    transform: translateY(6px);
-  
-   
-  }
-  
-  .button-14-top::after {
-    content: '';
-    position: absolute;
-    z-index: -1;
-    border-radius: 4px;
-    width: 100%;
-    height: 100%;
-    box-sizing: content-box;
-    background-image: radial-gradient(#ff0000, #750000);
-    text-align: center;
-    color: #fff;
-    box-shadow: inset 0 0 0px 1px rgba(255, 255, 255, .3), 0 1px 2px 1px rgba(255, 255, 255, .2);
-    transition-property: border-radius, padding, width, transform;
-    transition-duration: 60ms;
-  }
-  
-  .button-14:active .button-14-top::after {
-    padding: 0px 0px 0px 1px;
-  }
-
-  /* to mimic :active state for spacebar */
-.button-14.space-active .button-14-top {
-    transform: translateY(6px);
-  }
-  
-  .button-14.space-active .button-14-top::after {
-    padding: 0px 0px 0px 1px;
-  }
-  
-  .button-14-bottom {
-    animation: smoothPulse2 2s ease-out infinite;
-    position: absolute;
-    z-index: -1;
-    bottom: 4px;
-    left: 6px;
-    border-radius: 8px / 10px 10px 8px 8px;
-    padding-top: 0px;
-    width: calc(100% - 12px);
-    height: calc(100% - 10px);
-    box-sizing: content-box;
-    background-color: rgb(172, 0, 0);
-    background-image: radial-gradient(4px 8px at 4px calc(100% - 8px), rgba(255, 255, 255, 0.651), transparent), radial-gradient(4px 8px at calc(100% - 4px) calc(100% - 8px), rgba(255, 255, 255, 0.479), transparent), radial-gradient(16px at -4px 0, white, transparent), radial-gradient(16px at calc(100% + 4px) 0, white, transparent);
-    box-shadow: 0px 2px 3px 0px rgba(51, 51, 51, 0.5), inset 0 -1px 3px 3px rgba(0, 0, 0, .4);
-    transition-property: border-radius, padding-top;
-    transition-duration: 60ms;
-  }
-  
-  .button-14:active .button-14-bottom {
-    border-radius: 10px 10px 8px 8px / 8px;
-    padding-top: 0;
-  }
-  
-
-
-/* ANALOG BUTTON END */
-  
-
-.performanceMainDivClass {
-    position: fixed;
-    top: 10px;
-    right: 32px;
-    color: #00ff00;
-    font-family: "Anta";
-    font-size: 16px;
-
-}
-
-
-
-
-/* 
-////////////ALTITUDE DISPLAY FIRST TRY///////
- */
- #altitudeMainDivId {
-  height: 300px;
-  position: absolute;
-  bottom: 15%;
-  right: 2.25%;
-  border: 2px solid rgba(255, 255, 255, 0.829);
-  border-radius: 4px;
-  width: 80px;
- 
-}
-
-#altViewportId {
-  z-index: 9;
-  position: absolute;
-  top: calc(50% - 16px);
-  border-top: 2px solid white;
-  border-bottom: 2px solid white;
-  background-color: rgba(248, 255, 206, 0.384);
-  width: 100%;
-  height: 32px;
-}
-
-
-
-.altitudeLabel {
-  position: absolute;
-  bottom: -38px;
-  left:  11px;
-  color: #ffffff;
-  font-size: 12px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  
-
-}
-
-.velocityLabel {
-  position: absolute;
-  bottom: -22px;
-  left:  2px;
-  color: #ffffff;
-  font-size: 12px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  
-
-}
-
-.overflowHiddenWrapperClass{
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-}
-
-/* .altitudeStepsIndicatorClass{
-  color: white;
-  position: relative;
-  bottom: 280%;
-} */
-.altitudeStepsIndicatorClass {
-  color: white;
-  position: relative;
-  bottom: 0;
-  transform: translateY(0);
-  transition: all 50ms ease-in-out;
-}
-
-.single-altitude-div-class {
-  height: 250px;
-  min-height: 50px;
-  width: 100%;
-  /* height: 128px; */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-}
-#altitudeLabelId{
-  color: rgb(255, 255, 255);
-  
-}
-#altitudeNumbericId{
-  margin-top: 2px;
-  transition: all 400ms ease-in-out;
-}
-#altitudeNumbericId.is-low{
-  color: rgb(0, 255, 0);
-}
-
-.startupHintClass{
-  position: relative;
-  z-index: 20;
-  margin: 16px;
-  color: white;
-  font-size: 18px;
-}
-
-
-
-
-/* ///FDAI Flight Director Attitude Indicator/// */
-
-.mainFDAIDisplayContainerClass{
-  height: 120px;
-  width: 120px;
-  background: radial-gradient(rgb(39, 39, 39) 25%, rgb(0, 0, 0) 130%);
-
-  position: absolute;
-  bottom: 15%;
-  right: 9%;
-
-  border-radius: 6px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-}
-
-   /* Static triangle indicator in the outer container */
-   .mainFDAIDisplayContainerClass::before {
-    content: '';
-    position: absolute;
-    top: 0px; /* Position at the top of the container */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 0;
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 10px solid #ffffff; /* Red triangle pointing up */
-    z-index: 10; /* Ensure it stays on top */
-  }
-
-.mainCircleDisplay{
-  height: 100px;
-  width: 100px;
-  border-radius: 50%;
-  background-color: #000000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-/* Degree markers - using pseudo-elements for main cardinal points */
-.mainCircleDisplay::before, 
-.mainCircleDisplay::after,
-.degree-marker-0,
-.degree-marker-90,
-.degree-marker-180,
-.degree-marker-270 {
-  content: '';
-  position: absolute;
-  background-color: #ffffff;
-}
-
-/* Horizontal markers (0° and 180°) */
-.mainCircleDisplay::before {
-  width: 10px;
-  height: 2px;
-  top: 50%;
-  left: -8px;
-  transform: translateY(-50%);
-  z-index: 11;
-}
-
-.mainCircleDisplay::after {
-  width: 10px;
-  height: 2px;
-  top: 50%;
-  right: -8px;
-  transform: translateY(-50%);
-}
-
-/* Additional degree markers */
-.degree-marker-0, 
-.degree-marker-90,
-.degree-marker-180,
-.degree-marker-270 {
-  width: 8px;
-  height: 2px;
-}
-
-/* Top marker (90°) */
-.degree-marker-90 {
-  top: -4px;
-  left: 50%;
-  transform: translateX(-50%) rotate(90deg);
-}
-
-/* Bottom marker (270°) */
-.degree-marker-270 {
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%) rotate(90deg);
-}
-
-/* Additional smaller markers for 30°, 60°, etc. */
-.small-markers::before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border: 1px dashed rgba(223, 223, 223, 0.329);
-  border-radius: 50%;
-  box-sizing: border-box;
-  left: 0; 
-  top: 0;
-}
-
-
-.half-circle-clip {
-  position: absolute;
-  width: 100px;
-  height: 50px; /* Half the height of the parent */
-  background-color: #ebe700;
-  border-radius: 50px 50px 0 0; /* Top half-circle */
-  left: 0; /* Center horizontally */
-  top: 0; /* Position at the top of parent */
-  transform-origin: bottom center; /* Set rotation origin to bottom center */
-  /* animation: rotate 4s linear infinite; */
-  transform: rotate(180deg);
-}
-.half-circle-clip::before {
-  content: '';
-  position: absolute;
-  top: 0px; /* Position at the top of the container */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 10px solid #ffffff; /* Red triangle pointing up */
-  z-index: 10; /* Ensure it stays on top */
-}
-
-.rollLabel {
-  position: absolute;
-  bottom: -32px;
-  transform: translateX(-50% +1);
-  color: #ffffff;
-  font-size: 12px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  
-
-}
-
-
-/* 
-Warning blink when Roll is over threshhold */
-
-@keyframes pulse-green {
-  0%, 100% { border-top-color: #00ff00; opacity: 0.6; }
-  50% { border-top-color: #00ff00; opacity: 1; }
-}
-
-/* Class that applies the green pulse animation */
-.green-pulse::before {
-  animation: pulse-green 1.5s infinite; /* Slower, smoother pulse */
-  border-top-color: #00ff00; /* Base color is green */
-}
-
-/* Keep your existing red blink animation */
-@keyframes blink-red {
-  0%, 100% { border-top-color: #ffffff; }
-  50% { border-top-color: #ff0000; }
-}
-
-.warning-blink::before {
-  animation: blink-red 0.3s infinite;
-}
-
-
-
-
-
-
-
-
-@keyframes warningBlink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.1;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-
-@keyframes successMessage {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.2;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes smoothPulse {
-  0% {
-    opacity: 1;
-    background-color: #ff0000b7;
-  }
-  50% {
-    opacity: 0.6;
-    background-color: #160000;
-  }
-  100% {
-    opacity: 1;
-    background-color: #ff0000;
-  }
-}
-@keyframes smoothPulse2 {
-    0% {
-      opacity: 1;
-      background-color: rgb(172, 0, 0);
-    }
-    50% {
-    
-        opacity: 0.4;
-        background-color: #160000;
-    }
-    100% {
-      opacity: 1;
-      background-color: rgb(172, 0, 0);
-    }
-  }
-  
-
-/* ///MISSION PANEL: level, objective, score, combo/// */
-
-.missionPanelClass {
-  position: absolute;
-  top: 12px;
-  left: calc(50% - 210px);
-  width: 420px;
-  box-sizing: border-box;
-  padding: 8px 12px;
-  border: 2px solid rgba(255, 255, 255, 0.829);
-  border-radius: 4px;
-  background-color: rgba(0, 3, 51, 0.85);
-  color: white;
-  font-size: 14px;
-}
-.missionHeaderClass,
-.missionScoreRowClass {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-.missionObjectiveClass {
-  margin: 4px 0;
-  font-size: 20px;
-  color: rgb(81, 255, 0);
-}
-#missionScoreId {
-  font-family: "DSEG7Modern";
-  color: rgb(81, 255, 0);
-}
-.missionComboClass {
-  visibility: hidden;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: rgb(255, 208, 0);
-}
-.missionComboClass.is-active {
-  visibility: visible;
-}
-.comboTrackClass {
-  display: inline-block;
-  width: 60px;
-  height: 6px;
-  border: 1px solid rgb(255, 208, 0);
-}
-#missionComboBarId {
-  display: block;
-  height: 100%;
-  background-color: rgb(255, 208, 0);
-}
-.missionHintClass {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
-}
-.hudButtonClass {
-  font: inherit;
-  font-size: 12px;
-  color: white;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 4px;
-  padding: 2px 8px;
-  cursor: pointer;
-}
-.hudButtonClass:hover,
-.hudButtonClass:focus-visible {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.missionAlertClass {
-  position: absolute;
-  top: 24%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 6px 16px;
-  border: 2px solid currentColor;
-  border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  font-size: 22px;
-  white-space: nowrap;
-  visibility: hidden;
-}
-.missionAlertClass.is-visible {
-  visibility: visible;
-}
-.missionAlertClass[data-tone="warn"] {
-  color: rgb(255, 80, 60);
-}
-.missionAlertClass[data-tone="good"] {
-  color: rgb(255, 208, 0);
-}
-
-/* ///SCREENS: mission select, briefing, result/// */
-
-.screenClass {
-  width: min(560px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
-  box-sizing: border-box;
-  padding: 24px;
-  border: 2px solid rgba(255, 255, 255, 0.829);
-  border-radius: 6px;
-  background-color: #000333;
-  color: white;
-  font-family: "Anta";
+  background: var(--color-space);
+  color: var(--color-text);
+  font-family: var(--font-ui);
   font-size: 16px;
   line-height: 1.4;
 }
-.screenClass::backdrop {
-  background-color: rgba(0, 0, 0, 0.65);
+
+button {
+  font: inherit;
+  color: inherit;
 }
-.screenClass h2 {
-  margin: 0 0 8px;
-  font-size: 28px;
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
 }
-.screenClass h3 {
-  margin: 16px 0 4px;
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.7);
+
+kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 0.35em;
+  border: 1px solid var(--color-border-dim);
+  border-bottom-width: 2px;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+  font: inherit;
+  font-size: 0.85em;
+  text-align: center;
 }
-.screenClass ol {
-  margin: 0;
+
+.digits {
+  font-family: var(--font-digits);
+  color: var(--color-accent);
 }
-.screenKickerClass {
-  margin: 0;
-  color: rgb(81, 255, 0);
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
-.screenMetaClass {
-  color: rgba(255, 255, 255, 0.7);
+
+.startup-hint {
+  position: relative;
+  z-index: 20;
+  margin: var(--space-4);
+  font-size: 18px;
+}
+
+/* 3. Stage layout --------------------------------------------------------- */
+
+.viewport {
+  display: grid;
+  place-items: center;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Takes the scaled size in the page layout; the stage inside is transformed. */
+.stage-frame {
+  position: relative;
+  width: calc(var(--world-width) + 2 * var(--side-width));
+  height: calc(var(--world-height) + var(--top-bar-height));
+}
+
+.stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: var(--side-width) var(--world-width) var(--side-width);
+  grid-template-rows: var(--top-bar-height) var(--world-height);
+  transform-origin: 0 0;
+  transform: scale(var(--stage-scale, 1));
+  user-select: none;
+}
+
+.top-bar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: 0 var(--space-4);
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+}
+
+.world {
+  position: relative;
+  width: var(--world-width);
+  height: var(--world-height);
+  outline: 1px solid var(--color-border-dim);
+  overflow: hidden;
+}
+
+.world canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--world-width);
+  height: var(--world-height);
+  display: block;
+}
+
+/* 4. Top bar -------------------------------------------------------------- */
+
+.flight-computer {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.readout__label {
+  color: var(--color-text-dim);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.readout__value {
+  font-size: 22px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+#speed-readout {
+  min-width: 80px;
+}
+
+#mission-time {
+  min-width: 215px;
+}
+
+.readout--score {
+  align-items: flex-end;
+  min-width: 110px;
+}
+
+.mission-panel {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-4);
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--color-panel);
+}
+
+.mission-panel__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 20px;
+  color: var(--color-text-dim);
   font-size: 14px;
 }
-.screenTipClass {
-  padding: 8px 12px;
-  border-left: 3px solid rgb(255, 208, 0);
-  background-color: rgba(255, 255, 255, 0.08);
+
+.mission-panel__objective {
+  color: var(--color-accent);
+  font-size: 22px;
+  line-height: 1.3;
 }
-.screenActionsClass {
+
+.combo {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 16px;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-gold);
+  visibility: hidden;
 }
-.screenClass button {
-  font: inherit;
-  color: white;
-  background-color: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: 4px;
-  padding: 8px 16px;
+
+.combo.is-active {
+  visibility: visible;
+}
+
+.combo__track {
+  width: 72px;
+  height: 8px;
+  border: 1px solid var(--color-gold);
+  border-radius: 2px;
+}
+
+.combo__bar {
+  display: block;
+  height: 100%;
+  background: var(--color-gold);
+}
+
+.hud-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fps {
+  color: var(--color-text-dim);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--color-panel);
+  font-size: 20px;
   cursor: pointer;
 }
-.screenClass button:hover:not(:disabled),
-.screenClass button:focus-visible {
-  background-color: rgba(255, 255, 255, 0.15);
-  border-color: white;
+
+.icon-button:hover {
+  background: var(--color-panel-raised);
+  border-color: var(--color-text);
 }
-.screenClass button.primaryButtonClass {
-  background-color: rgb(0, 107, 5);
-  border-color: rgb(0, 231, 12);
+
+.pause-icon {
+  width: 14px;
+  height: 16px;
+  border-inline: 5px solid currentColor;
 }
-.screenClass button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+
+/* 5. Instruments ---------------------------------------------------------- */
+
+.instrument {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
 }
-.screenClass [hidden] {
+
+.instrument__label {
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.instrument__note {
+  max-width: 120px;
+  color: var(--color-text-dim);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* Tape: a strip that scrolls behind a fixed centre marker (moved by js/ui/hud.js). */
+.tape {
+  position: relative;
+  overflow: hidden;
+  border: var(--border);
+  border-radius: var(--radius);
+  background: var(--color-space);
+}
+
+.tape--velocity {
+  --tape-step: 120px;
+  width: 56px;
+  height: 400px;
+}
+
+.tape--altitude {
+  --tape-step: 230px;
+  width: 80px;
+  height: 260px;
+}
+
+.tape__marker {
+  position: absolute;
+  z-index: 1;
+  top: calc(50% - 16px);
+  left: 0;
+  right: 0;
+  height: 32px;
+  border-block: 2px solid var(--color-text);
+  background: rgba(248, 255, 206, 0.38);
+}
+
+.tape__strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  will-change: transform;
+}
+
+.tape__step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--tape-step);
+  font-weight: 800;
+  text-shadow: 0 0 3px #000;
+}
+
+/* Tick between two steps */
+.tape__step::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 25%;
+  width: 50%;
+  height: 2px;
+  background: var(--color-text);
+}
+
+.tape__step--green {
+  background: linear-gradient(180deg, #000 0%, #00ff00 100%);
+}
+
+.tape__step--orange {
+  background: linear-gradient(180deg, var(--color-warn) 0%, #995c00 50%, #000 100%);
+}
+
+.tape__step--orange-red {
+  background: linear-gradient(180deg, var(--color-danger-strong) 0%, var(--color-warn) 100%);
+}
+
+.tape__step--red {
+  background: var(--color-danger-strong);
+}
+
+/* Landing speed limit, positioned in tape units from the bottom of the strip. */
+.tape__limit {
+  position: absolute;
+  bottom: calc(var(--at) * var(--tape-step) - 1px);
+  left: 0;
+  right: 0;
+  border-top: 2px dashed var(--color-danger);
+}
+
+.gauges {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 44px;
+}
+
+.gauge__track {
+  display: flex;
+  align-items: flex-end;
+  width: 28px;
+  height: 170px;
+  padding: 2px;
+  border: var(--border);
+  border-radius: var(--radius);
+}
+
+.gauge__fill {
+  width: 100%;
+  height: 100%;
+  transition: height 200ms linear;
+}
+
+.gauge__fill--oxygen {
+  background: radial-gradient(#00d9ff 1%, #003a44 95%);
+}
+
+.gauge__fill--fuel {
+  background: radial-gradient(#fff 1%, #3a3a3a 95%);
+}
+
+.gauge__label {
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.gauge__value {
+  color: var(--color-text-dim);
+  font-size: 13px;
+}
+
+.gauge.is-low .gauge__track {
+  border-color: var(--color-danger);
+}
+
+.gauge.is-low .gauge__value {
+  color: var(--color-danger);
+}
+
+/* Attitude: the yellow half is the ship's underside; upright = yellow at the bottom. */
+.attitude {
+  --pointer-color: var(--color-text);
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 116px;
+  height: 116px;
+  border-radius: 6px;
+  background: radial-gradient(#272727 25%, #000 130%);
+}
+
+.attitude::before,
+.attitude__ground::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  translate: -50% 0;
+  border-inline: 8px solid transparent;
+  border-top: 10px solid var(--pointer-color);
+}
+
+.attitude::before {
+  z-index: 1;
+}
+
+.attitude__dial {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border: 1px dashed var(--color-border-dim);
+  border-radius: 50%;
+  background: var(--color-space);
+}
+
+.attitude__ground {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: 96px;
+  height: 48px;
+  border-radius: 48px 48px 0 0;
+  background: #ebe700;
+  transform-origin: bottom center;
+  transform: rotate(180deg);
+}
+
+#attitude.is-ok .attitude {
+  --pointer-color: var(--color-good);
+}
+
+#attitude.is-ok .attitude::before {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+#attitude.is-tilted .attitude {
+  --pointer-color: var(--color-danger-strong);
+}
+
+#attitude.is-tilted .attitude::before {
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+#attitude.is-ok .instrument__note {
+  color: var(--color-good);
+}
+
+#attitude.is-tilted .instrument__note {
+  color: var(--color-danger);
+}
+
+.key-hints {
+  display: grid;
+  gap: var(--space-2);
+  margin: auto 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-dim);
+  font-size: 12px;
+}
+
+/* 6. In-world messages ---------------------------------------------------- */
+
+.alert,
+.flight-status {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 2;
+  border-radius: var(--radius);
+  white-space: nowrap;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.alert.is-visible,
+.flight-status.is-visible {
+  visibility: visible;
+}
+
+.alert {
+  top: 40px;
+  padding: 6px var(--space-4);
+  border: 2px solid currentColor;
+  background: rgba(0, 0, 0, 0.82);
+  font-size: 22px;
+}
+
+.alert[data-tone="warn"] {
+  color: var(--color-danger);
+}
+
+.alert[data-tone="good"] {
+  color: var(--color-gold);
+}
+
+.flight-status {
+  bottom: 20px;
+  min-width: 300px;
+  padding: var(--space-2) var(--space-6);
+  border: 4px solid var(--color-border);
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.flight-status[data-state="collision"] {
+  background: radial-gradient(circle, #ffa200 25%, #ff4a1c 100%);
+  color: #000;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.flight-status[data-state="landed"] {
+  background: radial-gradient(circle, #008f08 25%, var(--color-good-dark) 100%);
+}
+
+.flight-status[data-state="oxygen"] {
+  background: #a30000;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* 7. Screens (dialogs) and buttons ---------------------------------------- */
+
+.screen {
+  width: min(580px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: var(--space-6);
+  border: var(--border);
+  border-radius: 6px;
+  background: var(--color-panel);
+  color: var(--color-text);
+}
+
+.screen--narrow {
+  width: min(360px, calc(100vw - 32px));
+}
+
+.screen::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.screen h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.screen h3 {
+  margin: var(--space-4) 0 var(--space-1);
+  color: var(--color-text-dim);
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.screen p {
+  margin: var(--space-2) 0;
+}
+
+.screen ol,
+.screen ul {
+  margin: 0;
+  padding-left: var(--space-6);
+}
+
+.screen li + li {
+  margin-top: var(--space-1);
+}
+
+.screen [hidden] {
   display: none;
 }
 
-.levelListClass {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  gap: 8px;
+.screen__kicker {
+  margin: 0;
+  color: var(--color-accent);
 }
-.screenClass button.levelCardClass {
-  width: 100%;
+
+.screen__meta {
+  color: var(--color-text-dim);
+  font-size: 14px;
+}
+
+.screen__tip {
+  padding: var(--space-2) var(--space-3);
+  border-left: 3px solid var(--color-gold);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.screen__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.screen__actions--stacked {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.button {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius);
+  background: transparent;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--color-text);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Raised like a console key; sinks when pressed. */
+.button--primary {
+  border-color: var(--color-good);
+  background: var(--color-good-dark);
+  box-shadow: 0 4px 0 #003b03;
+  transition: transform 60ms, box-shadow 60ms;
+}
+
+.button--primary:hover:not(:disabled) {
+  border-color: var(--color-good);
+  background: #008507;
+}
+
+.button--primary:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #003b03;
+}
+
+.level-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.screen .level-list {
+  padding-left: 0;
+}
+
+.level-card {
   display: grid;
   grid-template-columns: 40px 1fr auto;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
+  width: 100%;
   text-align: left;
 }
-.levelNumberClass {
-  font-family: "DSEG7Modern";
-  color: rgb(81, 255, 0);
-}
-.levelStatusClass {
+
+.level-card__status {
+  color: var(--color-text-dim);
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
 }
-.starsClass {
-  color: rgb(255, 208, 0);
+
+.stars {
+  color: var(--color-gold);
   letter-spacing: 2px;
 }
 
-.resultStarsClass {
+.result-stars {
+  min-height: 20px;
   font-size: 40px;
+  line-height: 1.3;
   text-align: center;
 }
-.resultTableClass {
+
+.result-table {
   width: 100%;
   border-collapse: collapse;
 }
-.resultTableClass th {
-  text-align: left;
+
+.result-table th {
   font-weight: 400;
+  text-align: left;
 }
-.resultTableClass td {
+
+.result-table td {
   text-align: right;
 }
-.resultTableClass tfoot th,
-.resultTableClass tfoot td {
+
+.result-table tfoot th,
+.result-table tfoot td {
   padding-top: 6px;
-  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  border-top: 1px solid var(--color-border-dim);
+  color: var(--color-accent);
   font-size: 22px;
-  color: rgb(81, 255, 0);
 }
-#resultDialog.is-failure h2 {
-  color: rgb(255, 80, 60);
+
+#result-dialog.is-failure h2 {
+  color: var(--color-danger);
+}
+
+.key-table {
+  border-collapse: collapse;
+}
+
+.key-table th {
+  padding: 3px var(--space-4) 3px 0;
+  font-weight: 400;
+  text-align: left;
+  white-space: nowrap;
+}
+
+/* 8. Touch controls ------------------------------------------------------- */
+
+.touch-pad {
+  position: fixed;
+  inset: auto 0 0 0;
+  display: none;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: var(--space-4);
+  pointer-events: none;
+}
+
+.touch-pad__group {
+  display: flex;
+  gap: var(--space-3);
+  pointer-events: auto;
+}
+
+.touch-button {
+  width: 64px;
+  height: 64px;
+  border: var(--border);
+  border-radius: 50%;
+  background: rgba(0, 3, 51, 0.7);
+  font-size: 26px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.touch-button--main {
+  width: 84px;
+  height: 84px;
+}
+
+.touch-button.is-pressed {
+  background: var(--color-good-dark);
+  border-color: var(--color-good);
+}
+
+@media (pointer: coarse) {
+  .touch-pad {
+    display: flex;
+  }
+
+  .key-hints {
+    display: none;
+  }
+}
+
+/* 9. Small screens and motion preferences --------------------------------- */
+
+.rotate-hint {
+  display: none;
+  padding: var(--space-6);
+  font-size: 20px;
+  text-align: center;
+}
+
+@media (orientation: portrait) and (max-width: 700px) {
+  .stage-frame,
+  .touch-pad {
+    display: none;
+  }
+
+  .rotate-hint {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

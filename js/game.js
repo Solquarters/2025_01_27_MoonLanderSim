@@ -1,7 +1,8 @@
 import { LANDING, MAX_FRAME_MS, TICK_MS, TICKS_PER_SECOND, TRAJECTORY } from './config.js';
 import { FeedbackKind, Mission, MissionStatus, Tone } from './levels/mission.js';
 import { altitudeOf, predictTrajectory, speedOf, tiltFromVertical, toDegrees } from './sim/physics.js';
-import { ShipStatus } from './sim/simulation.js';
+import { ShipStatus, SimEvent } from './sim/simulation.js';
+import { FlightStatus } from './ui/hud.js';
 import { describeCurrentObjective } from './ui/missionText.js';
 
 const GameState = Object.freeze({
@@ -10,6 +11,7 @@ const GameState = Object.freeze({
   /** Level is loaded and frozen behind the briefing. */
   BRIEFING: 'briefing',
   PLAYING: 'playing',
+  PAUSED: 'paused',
   /** Mission is decided; the world keeps moving briefly before the result appears. */
   ENDING: 'ending',
   RESULT: 'result',
@@ -40,6 +42,7 @@ export class Game {
   #missionRenderer;
   #starfield;
   #hud;
+  #shipControls;
   #keyboard;
   #fpsCounter;
   #screens;
@@ -55,7 +58,9 @@ export class Game {
   #resultCountdown = 0;
   #outcome = null;
   #alert = null;
-  /** A flight is waiting behind the mission select screen. */
+  /** The ship came down during this flight (a level may also start on the ground). */
+  #touchedDown = false;
+  /** A paused flight is waiting behind the mission select screen. */
   #flightPaused = false;
 
   /**
@@ -64,17 +69,30 @@ export class Game {
    * @param {import('./render/missionRenderer.js').MissionRenderer} parts.missionRenderer
    * @param {import('./render/starfield.js').Starfield} parts.starfield
    * @param {import('./ui/hud.js').Hud} parts.hud
+   * @param {import('./input/shipControls.js').ShipControls} parts.shipControls
    * @param {import('./input/keyboard.js').Keyboard} parts.keyboard
    * @param {import('./ui/fpsCounter.js').FpsCounter} parts.fpsCounter
    * @param {import('./ui/screens.js').Screens} parts.screens
    * @param {readonly import('./levels/levels.js').Level[]} parts.levels
    * @param {import('./levels/progress.js').Progress} parts.progress
    */
-  constructor({ scene, missionRenderer, starfield, hud, keyboard, fpsCounter, screens, levels, progress }) {
+  constructor({
+    scene,
+    missionRenderer,
+    starfield,
+    hud,
+    shipControls,
+    keyboard,
+    fpsCounter,
+    screens,
+    levels,
+    progress,
+  }) {
     this.#scene = scene;
     this.#missionRenderer = missionRenderer;
     this.#starfield = starfield;
     this.#hud = hud;
+    this.#shipControls = shipControls;
     this.#keyboard = keyboard;
     this.#fpsCounter = fpsCounter;
     this.#screens = screens;
@@ -90,9 +108,24 @@ export class Game {
 
   // --- flow between screens ----------------------------------------------
 
-  /** Opens mission select; a running flight is paused behind it. */
+  /** Freezes a running flight and shows the pause screen. */
+  pause() {
+    if (this.#state !== GameState.PLAYING) return;
+    this.#setState(GameState.PAUSED);
+    this.#screens.showPause(this.#missionView(null));
+  }
+
+  /** Shows controls and scoring; a running flight is paused first. */
+  showHelp() {
+    this.pause();
+    this.#screens.showHelp();
+  }
+
+  /** Opens mission select; a running or paused flight waits behind it. */
   showLevels() {
-    const canResume = this.#state === GameState.PLAYING || this.#flightPaused;
+    const flightInProgress =
+      this.#state === GameState.PLAYING || this.#state === GameState.PAUSED;
+    const canResume = flightInProgress || this.#flightPaused;
     this.#flightPaused = canResume;
     this.#setState(GameState.MENU);
     this.#screens.showLevelSelect({
@@ -132,6 +165,7 @@ export class Game {
     this.#state = state;
     const flying = state === GameState.PLAYING || state === GameState.ENDING;
     this.#keyboard.enabled = flying;
+    this.#shipControls.releaseAll();
     this.#unsimulatedMs = 0;
   }
 
@@ -140,6 +174,7 @@ export class Game {
     this.#mission = new Mission(this.#levels[index]);
     this.#sim = this.#mission.createSimulation();
     this.#alert = null;
+    this.#touchedDown = false;
     this.#flightPaused = false;
     this.#missionRenderer.clearPopUps();
   }
@@ -169,7 +204,11 @@ export class Game {
 
   #tick(now) {
     if (this.#state === GameState.PLAYING) {
-      const simEvents = this.#sim.step(this.#keyboard.controls);
+      const simEvents = this.#sim.step(this.#shipControls.state);
+      for (const event of simEvents) {
+        if (event.type === SimEvent.LANDED) this.#touchedDown = true;
+        if (event.type === SimEvent.LIFTOFF) this.#touchedDown = false;
+      }
       this.#showFeedback(this.#mission.update(this.#sim, simEvents), now);
       if (!this.#mission.isActive) this.#endMission();
       return;
@@ -231,7 +270,10 @@ export class Game {
     this.#starfield.update(now);
     this.#scene.draw(sim, trajectory, {
       belowShip: (ctx) => this.#missionRenderer.drawMarkers(ctx, mission, sim.moon, now),
-      aboveAll: (ctx) => this.#missionRenderer.drawPopUps(ctx, now),
+      aboveAll: (ctx) => {
+        this.#missionRenderer.drawGuide(ctx, mission, sim);
+        this.#missionRenderer.drawPopUps(ctx, now);
+      },
     });
     this.#hud.update({
       speed: speedOf(sim.ship),
@@ -240,18 +282,30 @@ export class Game {
       fuel: sim.fuel,
       oxygen: sim.oxygen,
       elapsedMs: sim.elapsedMs,
-      collisionWarning: Boolean(trajectory?.impact && trajectory.impact.speed >= LANDING.maxSpeed),
-      landed: sim.isLanded,
-      oxygenDepleted: sim.ship.status === ShipStatus.LOST,
-      mission: {
-        levelName: `${this.#levelIndex + 1}. ${mission.level.name}`,
-        objective: describeCurrentObjective(mission),
-        score: mission.score,
-        combo: mission.combo,
-        comboTimeLeft: mission.comboTimeLeft,
-        alert: this.#currentAlert(now),
-      },
+      flightStatus: this.#flightStatus(trajectory),
+      mission: this.#missionView(this.#currentAlert(now)),
     });
+  }
+
+  /** @returns {import('./ui/hud.js').MissionView} */
+  #missionView(alert) {
+    const mission = this.#mission;
+    return {
+      levelName: `Mission ${this.#levelIndex + 1}: ${mission.level.name}`,
+      objective: describeCurrentObjective(mission),
+      score: mission.score,
+      combo: mission.combo,
+      comboTimeLeft: mission.comboTimeLeft,
+      alert,
+    };
+  }
+
+  #flightStatus(trajectory) {
+    const sim = this.#sim;
+    if (sim.ship.status === ShipStatus.LOST) return FlightStatus.OXYGEN_DEPLETED;
+    if (sim.isLanded && this.#touchedDown) return FlightStatus.LANDED;
+    const crashAhead = trajectory?.impact && trajectory.impact.speed >= LANDING.maxSpeed;
+    return crashAhead ? FlightStatus.COLLISION : null;
   }
 
   /** Ongoing dangers outrank one-off messages. */

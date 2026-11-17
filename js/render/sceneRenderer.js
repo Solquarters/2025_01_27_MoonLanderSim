@@ -1,5 +1,5 @@
-import { LANDING, MOON_IMAGE } from '../config.js';
-import { TAU } from '../sim/physics.js';
+import { LANDING, MOON_IMAGE, WORLD } from '../config.js';
+import { clamp, TAU } from '../sim/physics.js';
 import { ShipStatus } from '../sim/simulation.js';
 
 const COLORS = Object.freeze({
@@ -10,17 +10,37 @@ const COLORS = Object.freeze({
   pathSafeLanding: 'rgba(0, 255, 0, 0.6)',
   pathCrash: 'rgba(255, 0, 0, 0.6)',
   safeImpactMarker: 'green',
+  offScreenMarker: 'rgba(255, 255, 255, 0.9)',
 });
+
+/** Sharper than this brings no visible gain and costs fill rate. */
+const MAX_RESOLUTION = 2.5;
+const OFF_SCREEN_MARKER_INSET = 22;
 
 /** Draws the moon, the ship and everything that moves onto the main canvas. */
 export class SceneRenderer {
   #ctx;
   #moonImage = new Image();
+  #resolution = 1;
 
   /** @param {HTMLCanvasElement} canvas */
   constructor(canvas) {
     this.#ctx = canvas.getContext('2d');
     this.#moonImage.src = MOON_IMAGE.src;
+  }
+
+  /**
+   * Matches the canvas bitmap to its on-screen size so the scene stays sharp
+   * when the stage is scaled up or shown on a high-density display.
+   * @param {number} pixelsPerWorldUnit
+   */
+  setResolution(pixelsPerWorldUnit) {
+    const resolution = clamp(pixelsPerWorldUnit, 1, MAX_RESOLUTION);
+    if (resolution === this.#resolution) return;
+    this.#resolution = resolution;
+    const { canvas } = this.#ctx;
+    canvas.width = Math.round(WORLD.width * resolution);
+    canvas.height = Math.round(WORLD.height * resolution);
   }
 
   /**
@@ -32,7 +52,8 @@ export class SceneRenderer {
    */
   draw(sim, trajectory, { belowShip, aboveAll } = {}) {
     const ctx = this.#ctx;
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.setTransform(this.#resolution, 0, 0, this.#resolution, 0, 0);
+    ctx.clearRect(0, 0, WORLD.width, WORLD.height);
 
     this.#drawTrace(sim.trace);
     this.#drawMoon(sim.moon);
@@ -41,6 +62,7 @@ export class SceneRenderer {
     if (sim.ship.status !== ShipStatus.DESTROYED) {
       this.#drawShip(sim.ship);
       this.#drawThrusterFlames(sim.ship, sim.thrusters);
+      this.#drawOffScreenMarker(sim.ship);
     }
     this.#drawDebris(sim.debris);
     aboveAll?.(ctx);
@@ -161,6 +183,24 @@ export class SceneRenderer {
       ctx.lineWidth = 1;
       ctx.stroke();
     }
+    ctx.restore();
+  }
+
+  /** An arrow at the edge of the world pointing to a ship that has left the view. */
+  #drawOffScreenMarker(ship) {
+    const onScreen = ship.x >= 0 && ship.x <= WORLD.width && ship.y >= 0 && ship.y <= WORLD.height;
+    if (onScreen) return;
+
+    const ctx = this.#ctx;
+    const inset = OFF_SCREEN_MARKER_INSET;
+    const x = clamp(ship.x, inset, WORLD.width - inset);
+    const y = clamp(ship.y, inset, WORLD.height - inset);
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.atan2(ship.y - y, ship.x - x));
+    ctx.fillStyle = COLORS.offScreenMarker;
+    this.#fillTriangle(12, 0, -6, -8, -6, 8);
     ctx.restore();
   }
 

@@ -13,8 +13,12 @@ export class Starfield {
   /**
    * @param {HTMLCanvasElement} staticCanvas
    * @param {HTMLCanvasElement} flickerCanvas
+   * @param {Object} [options]
+   * @param {boolean} [options.animate] false paints the flicker layer once (reduced motion)
+   * @param {() => number} [options.random]
    */
-  constructor(staticCanvas, flickerCanvas, random = Math.random) {
+  constructor(staticCanvas, flickerCanvas, { animate = true, random = Math.random } = {}) {
+    this.animate = animate;
     this.random = random;
     this.#paintStaticStars(staticCanvas);
     this.#flickerCtx = flickerCanvas.getContext('2d');
@@ -28,7 +32,8 @@ export class Starfield {
 
   /** Repaints the flickering layer if enough time has passed. */
   update(now) {
-    if (now - this.#lastFlickerAt < STARFIELD.flickerIntervalMs) return;
+    const painted = this.#lastFlickerAt > -Infinity;
+    if (painted && (!this.animate || now - this.#lastFlickerAt < STARFIELD.flickerIntervalMs)) return;
     this.#lastFlickerAt = now;
 
     const ctx = this.#flickerCtx;

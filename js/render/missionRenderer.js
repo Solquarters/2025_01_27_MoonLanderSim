@@ -1,5 +1,5 @@
 import { ObjectiveType } from '../levels/levels.js';
-import { TAU, pointAtBearing, toRadians } from '../sim/physics.js';
+import { distanceBetween, TAU, pointAtBearing, toRadians } from '../sim/physics.js';
 
 const COLORS = Object.freeze({
   activeGate: '0, 229, 255',
@@ -12,6 +12,8 @@ const COLORS = Object.freeze({
 
 const POP_UP = Object.freeze({ lifetimeMs: 1600, risePx: 34, font: '700 16px Anta, sans-serif' });
 const PULSE_PERIOD_MS = 900;
+/** The guide arrow circles the ship at this distance and hides when the target is close. */
+const GUIDE = Object.freeze({ orbitRadius: 24, hideWithin: 70 });
 
 /** Draws mission markers: gates, landing pads, the bonus beacon and score pop-ups. */
 export class MissionRenderer {
@@ -46,6 +48,38 @@ export class MissionRenderer {
     });
 
     if (mission.beacon) this.#drawBeacon(ctx, mission.beacon, pulse);
+  }
+
+  /**
+   * A small arrow next to the ship that points to the current objective,
+   * so the next gate or pad is found without searching the screen.
+   */
+  drawGuide(ctx, mission, sim) {
+    const objective = mission.currentObjective;
+    if (!mission.isActive || !sim.isFlying || !objective) return;
+
+    let target = null;
+    let color = COLORS.activeGate;
+    if (objective.type === ObjectiveType.GATE) {
+      target = objective;
+    } else if (objective.type === ObjectiveType.LAND && objective.pad) {
+      target = pointAtBearing(sim.moon, objective.pad.bearing, sim.moon.radius);
+      color = COLORS.activePad;
+    }
+    if (!target || distanceBetween(sim.ship, target) < GUIDE.hideWithin) return;
+
+    const angle = Math.atan2(target.y - sim.ship.y, target.x - sim.ship.x);
+    ctx.save();
+    ctx.translate(sim.ship.x, sim.ship.y);
+    ctx.rotate(angle);
+    ctx.fillStyle = `rgba(${color}, 0.9)`;
+    ctx.beginPath();
+    ctx.moveTo(GUIDE.orbitRadius + 9, 0);
+    ctx.lineTo(GUIDE.orbitRadius, -5);
+    ctx.lineTo(GUIDE.orbitRadius, 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 
   /** Call after the ship is drawn so the texts stay readable. */

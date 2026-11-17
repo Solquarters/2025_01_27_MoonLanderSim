@@ -7,53 +7,39 @@ const HELD_BINDINGS = Object.freeze({
   KeyS: 'stabilize',
 });
 
-const releasedControls = () => ({
-  thrust: false,
-  reverse: false,
-  rotateLeft: false,
-  rotateRight: false,
-  stabilize: false,
-});
-
 /**
  * Translates keyboard events into ship controls and one-shot actions.
  * Uses physical key codes, so Caps Lock and keyboard layouts do not matter.
  */
 export class Keyboard {
-  #controls = releasedControls();
+  #shipControls;
   #actions = new Map();
   #enabled = true;
 
-  /** @param {EventTarget} target */
-  constructor(target = window) {
+  /**
+   * @param {import('./shipControls.js').ShipControls} shipControls
+   * @param {EventTarget} [target]
+   */
+  constructor(shipControls, target = window) {
+    this.#shipControls = shipControls;
     target.addEventListener('keydown', (event) => this.#onKeyDown(event));
     target.addEventListener('keyup', (event) => this.#onKeyUp(event));
     // Keys released while the window is unfocused never send keyup.
-    target.addEventListener('blur', () => this.releaseAll());
+    target.addEventListener('blur', () => shipControls.releaseAll());
   }
 
-  /** While disabled (e.g. a dialog is open) keys are left to the browser. */
+  /** While disabled (a dialog is open) keys are left to the browser. */
   set enabled(enabled) {
     this.#enabled = enabled;
-    if (!enabled) this.releaseAll();
-  }
-
-  /** Current state of the held controls. */
-  get controls() {
-    return this.#controls;
   }
 
   /**
-   * Registers handlers for a one-shot key.
+   * Registers a one-shot key.
    * @param {string} code KeyboardEvent.code, e.g. "Space"
-   * @param {{ down?: () => void, up?: () => void }} handlers
+   * @param {() => void} handler called once per key press
    */
-  onKey(code, handlers) {
-    this.#actions.set(code, handlers);
-  }
-
-  releaseAll() {
-    this.#controls = releasedControls();
+  onKey(code, handler) {
+    this.#actions.set(code, handler);
   }
 
   #onKeyDown(event) {
@@ -62,29 +48,24 @@ export class Keyboard {
     const control = HELD_BINDINGS[event.code];
     if (control) {
       event.preventDefault(); // arrow keys would scroll the page
-      this.#controls[control] = true;
+      this.#shipControls.set(control, true);
       return;
     }
 
     const action = this.#actions.get(event.code);
     if (action) {
       event.preventDefault();
-      if (!event.repeat) action.down?.();
+      if (!event.repeat) action();
     }
   }
 
   #onKeyUp(event) {
-    if (!this.#enabled) return;
+    // Releases always count, or a key let go behind a dialog would stay "held".
     const control = HELD_BINDINGS[event.code];
     if (control) {
-      this.#controls[control] = false;
-      return;
-    }
-
-    const action = this.#actions.get(event.code);
-    if (action) {
-      event.preventDefault();
-      action.up?.();
+      this.#shipControls.set(control, false);
+    } else if (this.#enabled && this.#actions.has(event.code)) {
+      event.preventDefault(); // Space would otherwise "click" a focused button
     }
   }
 }

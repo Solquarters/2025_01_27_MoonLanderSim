@@ -22,7 +22,10 @@ There are no dependencies and no build step. Any static server works (for exampl
 | Arrow Left / Right | Rotate |
 | S | Stabilize rotation |
 | Space or R | Restart the mission |
-| Esc | Mission select (pauses the flight) |
+| P or Esc | Pause (resume, restart, missions, help) |
+| H | Controls and scoring help |
+
+On touch devices, on-screen buttons replace the keys. The flight pauses by itself when the tab or window loses focus.
 
 Land slower than 1.5 px/tick and within 20° of upright, before fuel and oxygen run out.
 
@@ -46,7 +49,7 @@ To add a mission, append an entry to `LEVELS` in `js/levels/levels.js`. Scores a
 ## Project layout
 
 ```
-index.html, style.css   page and HUD markup/styles
+index.html, style.css   page markup and styles (design tokens at the top of style.css)
 js/config.js            every tuning value in one place
 js/main.js              wires the parts together
 js/game.js              main loop (fixed 60 Hz physics tick)
@@ -59,14 +62,21 @@ js/levels/              missions, no DOM access, unit-tested
   mission.js            runtime: objective progress, combo, reaction events, score
   scoring.js            pure scoring rules
   progress.js           best scores, unlocks and rank (localStorage)
-js/input/keyboard.js    keyboard to ship controls
+js/input/               shipControls (shared state), keyboard, touchPad
 js/render/              canvas drawing (scene, mission markers, starfield)
-js/ui/                  DOM: HUD, screens (select, briefing, result), texts
+js/ui/                  DOM: HUD, screens (dialogs), stage scaling, texts
 tests/                  unit tests for the DOM-free modules
 tools/dev-server.mjs    static server behind `npm start`
 ```
 
 Rule of thumb: `js/sim` and `js/levels` decide what happens, `js/render` and `js/ui` only show it.
+
+## Interface notes
+
+- The stage has a fixed layout (1200 x 800 world plus instrument bars) and is scaled to fit the window, so the HUD always lines up with the play field. The world size in `style.css` (`--world-width/height`) must match `WORLD` in `js/config.js`.
+- Instruments sit around the world, never on top of it. Only short alerts appear inside it.
+- Screens are native `<dialog>` elements: focus is trapped, Escape works, and the page behind is inert.
+- Warnings never rely on colour alone (text accompanies every state), gauges expose their values to screen readers, and `prefers-reduced-motion` switches off blinking and star flicker.
 
 `gimbal.html`, `gimbal2.html` and `analog_css_button.html` are standalone experiments and not part of the game.
 
@@ -76,7 +86,8 @@ Rule of thumb: `js/sim` and `js/levels` decide what happens, `js/render` and `js
 - [x] "Oxygen depleted" message
 - [x] "Fuel depleted" message
 - [x] Missions: orbit, gates, land at a given spot
-- [ ] Responsive layout
+- [x] Responsive layout (scaled stage), pause, help, touch controls
+- [ ] Dedicated phone layout (portrait currently asks to rotate)
 - [ ] More mission types: swing-by, lowest orbit in a given time
 - [ ] Time warp slider (as in Kerbal Space Program)
 - [ ] Record the flight path and replay it ("landing with style")

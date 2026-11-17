@@ -4,10 +4,22 @@ import { formatCombo, formatScore } from './missionText.js';
 
 const VELOCITY_TAPE = Object.freeze({ unitsPerStep: 1, maxValue: 6 });
 const ALTITUDE_TAPE = Object.freeze({ unitsPerStep: 100, maxValue: 600 });
-const LOW_ALTITUDE = 50;
+const LOW_SUPPLY_PERCENT = 20;
 
-function requireElement(selector) {
-  const element = document.querySelector(selector);
+export const FlightStatus = Object.freeze({
+  COLLISION: 'collision',
+  LANDED: 'landed',
+  OXYGEN_DEPLETED: 'oxygen',
+});
+
+const FLIGHT_STATUS_TEXT = Object.freeze({
+  [FlightStatus.COLLISION]: 'On collision course',
+  [FlightStatus.LANDED]: 'Touchdown confirmed',
+  [FlightStatus.OXYGEN_DEPLETED]: 'Oxygen depleted',
+});
+
+function requireElement(selector, root = document) {
+  const element = root.querySelector(selector);
   if (!element) throw new Error(`HUD element not found: ${selector}`);
   return element;
 }
@@ -17,48 +29,60 @@ function setText(element, text) {
   if (element.textContent !== text) element.textContent = text;
 }
 
-function setVisible(element, visible) {
-  const display = visible ? 'flex' : 'none';
-  if (element.style.display !== display) element.style.display = display;
-}
-
 /**
  * A vertical instrument strip that scrolls behind a fixed centre marker.
  * The strip's bottom edge represents the value 0.
  */
 class Tape {
-  #viewport;
   #strip;
-  #step;
   #scale;
-  #viewportHeight = 0;
-  #stripHeight = 0;
-  #stepHeight = 0;
+  #windowHeight;
+  #stripHeight;
+  #stepHeight;
 
   /**
-   * @param {HTMLElement} viewport  clipping container
-   * @param {HTMLElement} strip     scrolling element
-   * @param {HTMLElement} step      one labelled segment of the strip
+   * @param {HTMLElement} root the `.tape` element
    * @param {{unitsPerStep:number, maxValue:number}} scale
    */
-  constructor(viewport, strip, step, scale) {
-    this.#viewport = viewport;
-    this.#strip = strip;
-    this.#step = step;
+  constructor(root, scale) {
+    this.#strip = requireElement('.tape__strip', root);
     this.#scale = scale;
-    this.measure();
-  }
-
-  measure() {
-    this.#viewportHeight = this.#viewport.offsetHeight;
+    // Layout sizes are in stage pixels and do not change when the stage is scaled.
+    this.#windowHeight = root.clientHeight;
     this.#stripHeight = this.#strip.offsetHeight;
-    this.#stepHeight = this.#step.offsetHeight;
+    this.#stepHeight = requireElement('.tape__step', root).offsetHeight;
   }
 
   show(value) {
     const steps = Math.min(value, this.#scale.maxValue) / this.#scale.unitsPerStep;
-    const offset = this.#viewportHeight / 2 - this.#stripHeight + steps * this.#stepHeight;
+    const offset = this.#windowHeight / 2 - this.#stripHeight + steps * this.#stepHeight;
     this.#strip.style.transform = `translateY(${offset}px)`;
+  }
+}
+
+/** A tank level bar that also reports its value to assistive technology. */
+class Gauge {
+  #root;
+  #fill;
+  #value;
+  #shownPercent = null;
+
+  /** @param {HTMLElement} root the `.gauge` element */
+  constructor(root) {
+    this.#root = root;
+    this.#fill = requireElement('.gauge__fill', root);
+    this.#value = requireElement('.gauge__value', root);
+  }
+
+  show(percent) {
+    this.#fill.style.height = `${percent}%`;
+
+    const rounded = Math.ceil(percent);
+    if (rounded === this.#shownPercent) return;
+    this.#shownPercent = rounded;
+    this.#value.textContent = String(rounded);
+    this.#root.setAttribute('aria-valuenow', String(rounded));
+    this.#root.classList.toggle('is-low', percent < LOW_SUPPLY_PERCENT);
   }
 }
 
@@ -70,9 +94,7 @@ class Tape {
  * @property {number} fuel               percent
  * @property {number} oxygen             percent
  * @property {number} elapsedMs
- * @property {boolean} collisionWarning
- * @property {boolean} landed
- * @property {boolean} oxygenDepleted
+ * @property {string|null} flightStatus  one of FlightStatus, or null
  * @property {MissionView} mission
  */
 
@@ -91,53 +113,44 @@ export class Hud {
   #el;
   #velocityTape;
   #altitudeTape;
+  #fuelGauge;
+  #oxygenGauge;
   #attitudeOk = null;
 
   constructor() {
     this.#el = {
-      speed: requireElement('#velocityInfoId'),
-      missionTime: requireElement('#missionTimerId'),
-      altitude: requireElement('#altitudeNumbericId'),
-      roll: requireElement('#rollNumbericId'),
-      rollRotator: requireElement('#rollIndicatorRotatorId'),
-      rollFrame: requireElement('.mainFDAIDisplayContainerClass'),
-      fuel: requireElement('#fuelAmountDivId'),
-      oxygen: requireElement('#oxygenAmountDivId'),
-      collisionWarning: requireElement('#collisionMainDivId'),
-      landingSuccess: requireElement('#landingSuccessMainDivId'),
-      oxygenDepleted: requireElement('#oxygenDepletedMainDivId'),
-      levelName: requireElement('#missionNameId'),
-      objective: requireElement('#missionObjectiveId'),
-      score: requireElement('#missionScoreId'),
-      combo: requireElement('#missionComboId'),
-      comboValue: requireElement('#missionComboValueId'),
-      comboBar: requireElement('#missionComboBarId'),
-      alert: requireElement('#missionAlertId'),
-      menuButton: requireElement('#missionMenuButtonId'),
+      speed: requireElement('#speed-readout'),
+      missionTime: requireElement('#mission-time'),
+      altitude: requireElement('#altitude-readout'),
+      attitude: requireElement('#attitude'),
+      attitudeGround: requireElement('#attitude-ground'),
+      attitudeState: requireElement('#attitude-state'),
+      roll: requireElement('#roll-readout'),
+      flightStatus: requireElement('#flight-status'),
+      levelName: requireElement('#mission-name'),
+      objective: requireElement('#mission-objective'),
+      score: requireElement('#mission-score'),
+      combo: requireElement('#mission-combo'),
+      comboValue: requireElement('#mission-combo-value'),
+      comboBar: requireElement('#mission-combo-bar'),
+      alert: requireElement('#mission-alert'),
+      pauseButton: requireElement('#pause-button'),
+      helpButton: requireElement('#help-button'),
     };
-
-    this.#velocityTape = new Tape(
-      requireElement('#velocityMainDivId .overflowHiddenWrapperClass'),
-      requireElement('#velocityStepsDivId'),
-      requireElement('.single-speed-div-class'),
-      VELOCITY_TAPE
-    );
-    this.#altitudeTape = new Tape(
-      requireElement('#altitudeMainDivId .overflowHiddenWrapperClass'),
-      requireElement('#altitudeStepsDivId'),
-      requireElement('.single-altitude-div-class'),
-      ALTITUDE_TAPE
-    );
-
-    window.addEventListener('resize', () => {
-      this.#velocityTape.measure();
-      this.#altitudeTape.measure();
-    });
+    this.#velocityTape = new Tape(requireElement('#velocity-tape'), VELOCITY_TAPE);
+    this.#altitudeTape = new Tape(requireElement('#altitude-tape'), ALTITUDE_TAPE);
+    this.#fuelGauge = new Gauge(requireElement('#fuel-gauge'));
+    this.#oxygenGauge = new Gauge(requireElement('#oxygen-gauge'));
   }
 
   /** @param {() => void} handler */
-  onMenuRequested(handler) {
-    this.#el.menuButton.addEventListener('click', handler);
+  onPauseRequested(handler) {
+    this.#onButton(this.#el.pauseButton, handler);
+  }
+
+  /** @param {() => void} handler */
+  onHelpRequested(handler) {
+    this.#onButton(this.#el.helpButton, handler);
   }
 
   /** @param {HudView} view */
@@ -146,20 +159,46 @@ export class Hud {
 
     setText(el.speed, formatSpeed(view.speed));
     setText(el.missionTime, formatMissionTime(view.elapsedMs));
+    setText(el.altitude, String(Math.floor(view.altitude)));
     this.#velocityTape.show(view.speed);
-
-    setText(el.altitude, `${Math.floor(view.altitude)} px`);
-    el.altitude.classList.toggle('is-low', view.altitude < LOW_ALTITUDE);
     this.#altitudeTape.show(view.altitude);
+    this.#fuelGauge.show(view.fuel);
+    this.#oxygenGauge.show(view.oxygen);
 
     this.#showAttitude(view.tiltDeg);
-    el.fuel.style.height = `${view.fuel}%`;
-    el.oxygen.style.height = `${view.oxygen}%`;
-
-    setVisible(el.collisionWarning, view.collisionWarning);
-    setVisible(el.landingSuccess, view.landed);
-    setVisible(el.oxygenDepleted, view.oxygenDepleted);
+    this.#showFlightStatus(view.flightStatus);
     this.#showMission(view.mission);
+  }
+
+  #onButton(button, handler) {
+    button.addEventListener('click', () => {
+      // Keep keyboard focus off the HUD so Space keeps meaning "restart".
+      button.blur();
+      handler();
+    });
+  }
+
+  #showAttitude(tiltDeg) {
+    const el = this.#el;
+    // The yellow "underside" half points down when the ship is upright.
+    el.attitudeGround.style.transform = `rotate(${tiltDeg + 180}deg)`;
+    setText(el.roll, `${Math.round(tiltDeg)}°`);
+
+    const attitudeOk = Math.abs(tiltDeg) <= LANDING.maxTiltDeg;
+    if (attitudeOk === this.#attitudeOk) return;
+    this.#attitudeOk = attitudeOk;
+    el.attitude.classList.toggle('is-ok', attitudeOk);
+    el.attitude.classList.toggle('is-tilted', !attitudeOk);
+    setText(el.attitudeState, attitudeOk ? 'OK to land' : 'Too tilted to land');
+  }
+
+  #showFlightStatus(status) {
+    const el = this.#el.flightStatus;
+    const state = status ?? '';
+    if (el.dataset.state === state) return;
+    el.dataset.state = state;
+    el.textContent = FLIGHT_STATUS_TEXT[status] ?? '';
+    el.classList.toggle('is-visible', status !== null);
   }
 
   /** @param {MissionView} mission */
@@ -179,20 +218,5 @@ export class Hud {
     setText(el.alert, mission.alert?.text ?? '');
     el.alert.dataset.tone = mission.alert?.tone ?? '';
     el.alert.classList.toggle('is-visible', mission.alert !== null);
-  }
-
-  #showAttitude(tiltDeg) {
-    const el = this.#el;
-    // The indicator's coloured half points down when the ship is upright.
-    el.rollRotator.style.transform = `rotate(${tiltDeg + 180}deg)`;
-    setText(el.roll, String(Math.round(tiltDeg)));
-
-    const attitudeOk = Math.abs(tiltDeg) <= LANDING.maxTiltDeg;
-    if (attitudeOk === this.#attitudeOk) return;
-    this.#attitudeOk = attitudeOk;
-    for (const element of [el.rollRotator, el.rollFrame]) {
-      element.classList.toggle('green-pulse', attitudeOk);
-      element.classList.toggle('warning-blink', !attitudeOk);
-    }
   }
 }

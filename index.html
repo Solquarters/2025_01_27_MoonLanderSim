@@ -2,261 +2,285 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Moon Lander</title>
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="./img/icons8-lander-topaz-16.png"
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Moon Lander: fly gates, react to gyro faults and land softly in a 2D gravity simulation."
     />
+    <meta name="theme-color" content="#000000" />
+    <title>Moon Lander</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="./img/icons8-lander-topaz-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="./img/icons8-lander-topaz-16.png" />
     <link rel="stylesheet" href="style.css" />
     <script type="module" src="./js/main.js"></script>
   </head>
   <body>
-    <noscript>This simulation needs JavaScript.</noscript>
+    <noscript><p class="startup-hint">This simulation needs JavaScript.</p></noscript>
     <script>
       // ES modules are blocked on file:// URLs, so explain instead of showing a dead page.
       if (location.protocol === 'file:') {
         document.body.insertAdjacentHTML(
           'afterbegin',
-          '<p class="startupHintClass">Please start the simulation through a web server: run <code>npm start</code> in the project folder and open the printed address.</p>'
+          '<p class="startup-hint">Please start the simulation through a web server: run <code>npm start</code> in the project folder and open the printed address.</p>'
         );
       }
     </script>
-   <!-- MAIN HUD START -->
-    <div id="mainHUDId">
-      <div class="oxygenMainDivClass">
-        <div class="oxygenAmountDivClass" id="oxygenAmountDivId">
-          <span class="hudLabelClass">O²</span>
+
+    <main class="viewport">
+      <h1 class="visually-hidden">Moon Lander</h1>
+
+      <!--
+        The stage has a fixed layout size and is scaled to fit the window.
+        Instruments sit in the bars around the world, so they never cover the flight.
+      -->
+      <div class="stage-frame" id="stage-frame">
+        <div class="stage" id="stage">
+          <header class="top-bar">
+            <section class="flight-computer" aria-label="Flight computer">
+              <div class="readout">
+                <span class="readout__label">Velocity</span>
+                <span class="readout__value digits" id="speed-readout">0 . 00</span>
+              </div>
+              <div class="readout">
+                <span class="readout__label">Mission time</span>
+                <span class="readout__value digits" id="mission-time">00:00:00 . 000</span>
+              </div>
+            </section>
+
+            <section class="mission-panel" aria-label="Mission">
+              <div class="mission-panel__row">
+                <span id="mission-name"></span>
+                <span class="combo" id="mission-combo">
+                  Combo <span id="mission-combo-value"></span>
+                  <span class="combo__track"><span class="combo__bar" id="mission-combo-bar"></span></span>
+                </span>
+              </div>
+              <div class="mission-panel__objective" id="mission-objective"></div>
+            </section>
+
+            <div class="readout readout--score">
+              <span class="readout__label">Score</span>
+              <span class="readout__value digits" id="mission-score">0</span>
+            </div>
+
+            <div class="hud-actions">
+              <span class="fps">FPS <span id="fps-counter">--</span></span>
+              <button
+                type="button"
+                class="icon-button"
+                id="help-button"
+                aria-label="Controls and scoring"
+                title="Controls and scoring (H)"
+              >
+                <span aria-hidden="true">?</span>
+              </button>
+              <button type="button" class="icon-button" id="pause-button" aria-label="Pause" title="Pause (P)">
+                <span class="pause-icon" aria-hidden="true"></span>
+              </button>
+            </div>
+          </header>
+
+          <aside class="side side--left" aria-label="Speed">
+            <div class="instrument">
+              <span class="instrument__label">Velocity</span>
+              <div class="tape tape--velocity" id="velocity-tape" aria-hidden="true">
+                <div class="tape__marker"></div>
+                <div class="tape__strip">
+                  <div class="tape__step tape__step--red"><span>5.5</span></div>
+                  <div class="tape__step tape__step--red"><span>4.5</span></div>
+                  <div class="tape__step tape__step--orange-red"><span>3.5</span></div>
+                  <div class="tape__step tape__step--orange"><span>2.5</span></div>
+                  <div class="tape__step"><span>1.5</span></div>
+                  <div class="tape__step tape__step--green"><span>0.5</span></div>
+                  <div class="tape__limit" style="--at: 1.5"></div>
+                </div>
+              </div>
+              <span class="instrument__note">Dashed line: landing limit 1.5</span>
+            </div>
+
+            <ul class="key-hints" aria-label="Keyboard controls">
+              <li><kbd>↑</kbd> Engine</li>
+              <li><kbd>↓</kbd> Retro</li>
+              <li><kbd>←</kbd> <kbd>→</kbd> Rotate</li>
+              <li><kbd>S</kbd> Stabilize</li>
+              <li><kbd>Space</kbd> Restart</li>
+            </ul>
+          </aside>
+
+          <div class="world">
+            <canvas id="starfield-static" width="1200" height="800" aria-hidden="true"></canvas>
+            <canvas id="starfield-flicker" width="1200" height="800" aria-hidden="true"></canvas>
+            <canvas
+              id="scene"
+              width="1200"
+              height="800"
+              role="img"
+              aria-label="The lander flying around the moon. Flight data is shown in the instrument panels."
+            ></canvas>
+            <div class="alert" id="mission-alert" role="status" aria-live="assertive"></div>
+            <div class="flight-status" id="flight-status" role="status" aria-live="polite"></div>
+          </div>
+
+          <aside class="side side--right" aria-label="Supplies and attitude">
+            <div class="gauges">
+              <div
+                class="gauge"
+                id="oxygen-gauge"
+                role="meter"
+                aria-label="Oxygen"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="100"
+              >
+                <div class="gauge__track"><div class="gauge__fill gauge__fill--oxygen"></div></div>
+                <span class="gauge__label">O<sub>2</sub></span>
+                <span class="gauge__value">100</span>
+              </div>
+              <div
+                class="gauge"
+                id="fuel-gauge"
+                role="meter"
+                aria-label="Fuel"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="100"
+              >
+                <div class="gauge__track"><div class="gauge__fill gauge__fill--fuel"></div></div>
+                <span class="gauge__label">Fuel</span>
+                <span class="gauge__value">100</span>
+              </div>
+            </div>
+
+            <div class="instrument" id="attitude">
+              <span class="instrument__label">Roll <span id="roll-readout">0°</span></span>
+              <div class="attitude" aria-hidden="true">
+                <div class="attitude__dial">
+                  <div class="attitude__ground" id="attitude-ground"></div>
+                </div>
+              </div>
+              <span class="instrument__note" id="attitude-state">OK to land</span>
+            </div>
+
+            <div class="instrument">
+              <span class="instrument__label">Altitude <span id="altitude-readout">0</span></span>
+              <div class="tape tape--altitude" id="altitude-tape" aria-hidden="true">
+                <div class="tape__marker"></div>
+                <div class="tape__strip">
+                  <div class="tape__step tape__step--red"><span>550</span></div>
+                  <div class="tape__step tape__step--red"><span>450</span></div>
+                  <div class="tape__step tape__step--orange-red"><span>350</span></div>
+                  <div class="tape__step tape__step--orange"><span>250</span></div>
+                  <div class="tape__step"><span>150</span></div>
+                  <div class="tape__step tape__step--green"><span>50</span></div>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
-      <div class="fuelMainDivClass">
-        <div class="fuelAmountDivClass" id="fuelAmountDivId">
-          <span class="hudLabelClass">H²</span>
-        </div>
+
+      <p class="rotate-hint">Rotate your device to landscape to play.</p>
+    </main>
+
+    <!-- Shown on touch devices only (see style.css). -->
+    <div class="touch-pad" id="touch-pad">
+      <div class="touch-pad__group">
+        <button type="button" class="touch-button" data-control="rotateLeft" aria-label="Rotate left">⟲</button>
+        <button type="button" class="touch-button" data-control="stabilize" aria-label="Stabilize">S</button>
+        <button type="button" class="touch-button" data-control="rotateRight" aria-label="Rotate right">⟳</button>
       </div>
-
-      <section class="missionPanelClass" aria-label="Mission status">
-        <div class="missionHeaderClass">
-          <span id="missionNameId"></span>
-          <button type="button" class="hudButtonClass" id="missionMenuButtonId">Missions [Esc]</button>
-        </div>
-        <div class="missionObjectiveClass" id="missionObjectiveId"></div>
-        <div class="missionScoreRowClass">
-          <span>SCORE <span id="missionScoreId">0</span></span>
-          <span class="missionComboClass" id="missionComboId">
-            COMBO <span id="missionComboValueId"></span>
-            <span class="comboTrackClass"><span id="missionComboBarId"></span></span>
-          </span>
-          <span class="missionHintClass">[Space] restart</span>
-        </div>
-      </section>
-
-      <div class="missionAlertClass" id="missionAlertId" role="status" aria-live="polite"></div>
-
-      <div class="bottomCenterMessageClass" id="collisionMainDivId">
-        <div class="collisionWrapperDiv">ON COLLISION COURSE</div>
-      </div>
-
-      <div class="bottomCenterMessageClass" id="oxygenDepletedMainDivId">
-        <div class="collisionWrapperDiv">OXYGEN DEPLETED</div>
-      </div>
-
-      <div class="bottomCenterMessageClass" id="landingSuccessMainDivId">
-        <div class="LandingSuccessWrapperDiv">Touchdown Confirmed</div>
-      </div>
-
-      <div id="velocityMainDivId">
-        <div id="velIndicatorId"></div>
-        
-        <div class="overflowHiddenWrapperClass">
-        <div class="" id="velocityStepsDivId">
-          <div class="single-speed-div-class red-class">
-            <span>5.5</span>
-          </div>
-
-          <div class="seperator3">
-            <div class="seperator"></div>
-          </div>
-
-          <div class="single-speed-div-class red-class">
-            <span>4.5</span>
-          </div>
-          <div class="seperator3">
-            <div class="seperator"></div>
-          </div>
-          <div class="single-speed-div-class orange-red-gradient-class">
-            <span>3.5</span>
-          </div>
-
-          <div class="seperator2">
-            <div class="seperator"></div>
-          </div>
-
-          <div class="single-speed-div-class orange-gradient-class">
-            <span>2.5</span>
-          </div>
-          <div class="seperator"></div>
-          <div class="single-speed-div-class">
-            <span>1.5</span>
-          </div>
-          <div class="seperator"></div>
-          <div class="single-speed-div-class green-class">
-            <span>0.5</span>
-          </div>
-          <div class="seperator"></div>
-          
-        </div>
-      </div>
-      <span class="velocityLabel">Velocity</span>
-      </div>
-
-      <div id="altitudeMainDivId">
-        <div id="altViewportId"></div>
-        <div class="overflowHiddenWrapperClass">
-
-
-          <div class="altitudeStepsIndicatorClass" id="altitudeStepsDivId">
-            <div class="single-altitude-div-class red-class">
-              <span>550</span>
-            </div>
-  
-            <div class="seperator3">
-              <div class="seperator"></div>
-            </div>
-  
-            <div class="single-altitude-div-class red-class">
-              <span>450</span>
-            </div>
-            <div class="seperator3">
-              <div class="seperator"></div>
-            </div>
-            <div class="single-altitude-div-class orange-red-gradient-class">
-              <span>350</span>
-            </div>
-  
-            <div class="seperator2">
-              <div class="seperator"></div>
-            </div>
-  
-            <div class="single-altitude-div-class orange-gradient-class">
-              <span>250</span>
-            </div>
-            <div class="seperator"></div>
-            <div class="single-altitude-div-class">
-              <span>150</span>
-            </div>
-            <div class="seperator"></div>
-            <div class="single-altitude-div-class green-class">
-              <span>50</span>
-            </div>
-            <div class="seperator"></div>
-            
-          </div>
-
-        </div>
-        
-        <div class="altitudeLabel" id="altitudeLabelId">ALTITUDE<br>
-          <span id="altitudeNumbericId"></span>
-        </div>
-      </div>
-      
-
-      <div class="mainFDAIDisplayContainerClass">
-
-        <div class="mainCircleDisplay">
-
-          <div class="half-circle-clip" id="rollIndicatorRotatorId"></div>
-      <div class="degree-marker-90"></div>
-      <div class="degree-marker-270"></div>
-      <div class="small-markers"></div>
-
-        </div>
-
-        <div class="rollLabel" >ROLL<br>
-          <span id="rollNumbericId"></span>
-        </div>
-
-      </div>
-
-
-
-
-    </div>
-
-    <div class="guidanceComputerInterfaceMainDivClass">
-      <div class="velocityrMainDivClass">
-        <p>VELOCITY:</p>
-        <span id="velocityInfoId"></span> px/frame
-      </div>
-
-      <div class="missionTimerMainDivClass">
-        <br />
-        MISSION TIME:
-        <p id="missionTimerId"></p>
-      </div>
-
-      <div class="performanceMainDivClass">
-        FPS: <span id="fpsCounterId"></span>
+      <div class="touch-pad__group">
+        <button type="button" class="touch-button" data-control="reverse" aria-label="Retro engine">▽</button>
+        <button type="button" class="touch-button touch-button--main" data-control="thrust" aria-label="Main engine">▲</button>
       </div>
     </div>
 
-     <!-- MAIN HUD END -->
-
-    
-
-    <div class="canvas-container">
-      <!-- 1) Static star background -->
-      <canvas id="starryBg" width="1200" height="800"></canvas>
-      <!-- 2) Flickering stars on top of the static background -->
-      <canvas id="flickerCanvas" width="1200" height="800"></canvas>
-      <!-- 3) Gravity simulation canvas on top -->
-      <canvas id="gravityCanvas" width="1200" height="800"></canvas>
-    </div>
-    <dialog class="screenClass" id="levelSelectDialog" aria-labelledby="levelSelectTitle">
-      <h2 id="levelSelectTitle">Select mission</h2>
-      <p class="screenMetaClass" id="rankSummary"></p>
-      <ol class="levelListClass" id="levelList"></ol>
-      <div class="screenActionsClass">
-        <button type="button" id="levelSelectClose">Back to flight</button>
+    <dialog class="screen" id="level-select-dialog" aria-labelledby="level-select-title">
+      <h2 id="level-select-title">Select mission</h2>
+      <p class="screen__meta" id="rank-summary"></p>
+      <ol class="level-list" id="level-list"></ol>
+      <div class="screen__actions">
+        <button type="button" class="button" id="level-select-help">Controls</button>
+        <button type="button" class="button" id="level-select-close">Back to flight</button>
       </div>
     </dialog>
 
-    <dialog class="screenClass" id="briefingDialog" aria-labelledby="briefingTitle">
-      <p class="screenKickerClass" id="briefingKicker"></p>
-      <h2 id="briefingTitle"></h2>
-      <p id="briefingText"></p>
+    <dialog class="screen" id="briefing-dialog" aria-labelledby="briefing-title">
+      <p class="screen__kicker" id="briefing-kicker"></p>
+      <h2 id="briefing-title"></h2>
+      <p id="briefing-text"></p>
       <h3>Objectives</h3>
-      <ol id="briefingObjectives"></ol>
-      <p class="screenTipClass" id="briefingTip"></p>
-      <p class="screenMetaClass" id="briefingBest"></p>
-      <p class="screenMetaClass">
-        Arrow Up: engine · Arrow Down: retro engine · Arrow Left/Right: rotate · S: stabilize
-      </p>
-      <div class="screenActionsClass">
-        <button type="button" id="briefingBack">Missions</button>
-        <button type="button" class="primaryButtonClass" id="briefingStart">Launch</button>
+      <ol id="briefing-objectives"></ol>
+      <p class="screen__tip" id="briefing-tip"></p>
+      <p class="screen__meta" id="briefing-best"></p>
+      <div class="screen__actions">
+        <button type="button" class="button" id="briefing-back">Missions</button>
+        <button type="button" class="button" id="briefing-help">Controls</button>
+        <button type="button" class="button button--primary" id="briefing-start">Launch</button>
       </div>
     </dialog>
 
-    <dialog class="screenClass" id="resultDialog" aria-labelledby="resultTitle">
-      <p class="screenKickerClass" id="resultKicker"></p>
-      <h2 id="resultTitle"></h2>
-      <p id="resultDetail"></p>
-      <div class="resultStarsClass" id="resultStars"></div>
-      <table class="resultTableClass">
-        <tbody id="resultBreakdown"></tbody>
+    <dialog class="screen" id="result-dialog" aria-labelledby="result-title">
+      <p class="screen__kicker" id="result-kicker"></p>
+      <h2 id="result-title"></h2>
+      <p id="result-detail"></p>
+      <div class="result-stars" id="result-stars"></div>
+      <table class="result-table">
+        <tbody id="result-breakdown"></tbody>
         <tfoot>
           <tr>
             <th scope="row">Total</th>
-            <td id="resultTotal"></td>
+            <td id="result-total"></td>
           </tr>
         </tfoot>
       </table>
-      <p class="screenMetaClass" id="resultBest"></p>
-      <div class="screenActionsClass">
-        <button type="button" id="resultLevels">Missions</button>
-        <button type="button" id="resultRetry">Retry [R]</button>
-        <button type="button" class="primaryButtonClass" id="resultNext">Next mission</button>
+      <p class="screen__meta" id="result-best"></p>
+      <div class="screen__actions">
+        <button type="button" class="button" id="result-levels">Missions</button>
+        <button type="button" class="button" id="result-retry">Retry <kbd>R</kbd></button>
+        <button type="button" class="button button--primary" id="result-next">Next mission</button>
+      </div>
+    </dialog>
+
+    <dialog class="screen screen--narrow" id="pause-dialog" aria-labelledby="pause-title">
+      <h2 id="pause-title">Paused</h2>
+      <p class="screen__meta" id="pause-summary"></p>
+      <div class="screen__actions screen__actions--stacked">
+        <button type="button" class="button button--primary" id="pause-resume">Resume</button>
+        <button type="button" class="button" id="pause-restart">Restart mission</button>
+        <button type="button" class="button" id="pause-help">Controls and scoring</button>
+        <button type="button" class="button" id="pause-levels">Missions</button>
+      </div>
+    </dialog>
+
+    <dialog class="screen" id="help-dialog" aria-labelledby="help-title">
+      <h2 id="help-title">Controls and scoring</h2>
+      <table class="key-table">
+        <tbody>
+          <tr><th scope="row"><kbd>↑</kbd></th><td>Main engine: pushes the way the nose points</td></tr>
+          <tr><th scope="row"><kbd>↓</kbd></th><td>Retro engine: pushes the opposite way</td></tr>
+          <tr><th scope="row"><kbd>←</kbd> <kbd>→</kbd></th><td>Rotate (the spin keeps going until you stop it)</td></tr>
+          <tr><th scope="row"><kbd>S</kbd></th><td>Stabilize: stops the rotation</td></tr>
+          <tr><th scope="row"><kbd>Space</kbd> / <kbd>R</kbd></th><td>Restart the mission</td></tr>
+          <tr><th scope="row"><kbd>P</kbd> / <kbd>Esc</kbd></th><td>Pause</td></tr>
+          <tr><th scope="row"><kbd>H</kbd></th><td>This help</td></tr>
+        </tbody>
+      </table>
+      <h3>Landing</h3>
+      <p>
+        Touch down slower than <strong>1.5</strong> and within <strong>20°</strong> of upright. The dotted
+        line shows where you are heading: green means a safe touchdown speed, red means a crash.
+      </p>
+      <h3>Scoring</h3>
+      <ul>
+        <li><strong>Gates:</strong> faster than par earns a speed bonus; reaching the next gate before the combo bar runs out raises the multiplier up to x3.</li>
+        <li><strong>Gyro fault:</strong> the faster you stop the spin, the better the grade.</li>
+        <li><strong>Bonus beacon:</strong> worth more the sooner you grab it.</li>
+        <li><strong>Landing:</strong> soft, upright and centred on the pad scores extra.</li>
+        <li><strong>Finish:</strong> spare time and fuel add bonuses. The total decides your stars.</li>
+      </ul>
+      <div class="screen__actions">
+        <button type="button" class="button button--primary" id="help-close">Close</button>
       </div>
     </dialog>
   </body>
