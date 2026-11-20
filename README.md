@@ -93,4 +93,6 @@ Rule of thumb: `js/sim` and `js/levels` decide what happens, `js/render` and `js
 - [ ] Record the flight path and replay it ("landing with style")
 - [ ] Audio: ambience, thrust, explosion
 - [ ] Velocity-over-time graph
+- [ ] Roll-over-time graph
 - [ ] Moon phases
+- [ ] Rendezvous with orbital station
